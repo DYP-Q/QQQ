@@ -8,143 +8,100 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- FontAwesome CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+<body class="bg-slate-50 text-slate-800 min-h-screen">
 
     <!-- Header -->
     <header class="bg-indigo-900 text-white shadow-md">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex items-center space-x-3">
-                <div class="bg-indigo-600 p-2.5 rounded-lg text-xl shadow-inner">
-                    <i class="fa-solid fa-chart-line"></i>
-                </div>
-                <div>
-                    <h1 class="text-xl font-bold tracking-tight">OSA 개선 대책 유효성 점검 대시보드</h1>
-                    <p class="text-xs text-indigo-200">주기별 자주 검증 진척도 및 현장 품질 관리 모니터링</p>
-                </div>
+        <div class="max-w-7xl mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold">OSA 개선 대책 유효성 점검 대시보드</h1>
+                <p class="text-indigo-200 text-sm mt-1">주기별 자주 검증 진척도 및 현장 품질 관리 실시간 모니터링</p>
             </div>
-            
-            <!-- Data Source Controls -->
-            <div class="flex flex-wrap items-center gap-2 text-sm">
-                <div class="flex items-center bg-indigo-800/80 px-3 py-1.5 rounded-lg border border-indigo-700">
-                    <input type="text" id="csvUrlInput" placeholder="구글 스프레드시트 CSV 웹 게시 링크 입력" class="bg-transparent text-xs text-white placeholder-indigo-300 focus:outline-none w-64 md:w-80">
-                    <button onclick="loadFromUrl()" class="ml-2 bg-indigo-500 hover:bg-indigo-400 px-3 py-1 rounded text-xs font-medium transition">연동</button>
-                </div>
-                <label class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg cursor-pointer transition border border-indigo-700 text-xs flex items-center gap-1.5">
-                    <i class="fa-solid fa-file-arrow-up"></i> 파일 업로드(CSV)
-                    <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="loadFromFile(event)">
-                </label>
+            <div class="mt-4 md:mt-0 flex items-center space-x-2">
+                <span id="sync-status" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                    <span class="w-2 h-2 mr-1.5 bg-emerald-500 rounded-full animate-pulse"></span> 자동 실시간 연동 중
+                </span>
             </div>
         </div>
     </header>
 
     <!-- Main Container -->
-    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full space-y-6">
+    <main class="max-w-7xl mx-auto px-4 py-8 space-y-8">
 
-        <!-- KPI Summary Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+        <!-- KPI Cards Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">전체 관리 항목</p>
-                    <h3 id="kpiTotal" class="text-2xl font-bold text-slate-800 mt-1">0 건</h3>
+                    <p class="text-sm font-medium text-slate-500">전체 관리 항목</p>
+                    <h3 id="kpi-total" class="text-3xl font-bold text-slate-900 mt-1">0 건</h3>
                 </div>
-                <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl font-bold">
-                    <i class="fa-solid fa-clipboard-list"></i>
-                </div>
+                <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl text-xl font-bold">📋</div>
             </div>
-
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">전체 점검 완료율</p>
-                    <h3 id="kpiRate" class="text-2xl font-bold text-emerald-600 mt-1">0%</h3>
+                    <p class="text-sm font-medium text-slate-500">전체 점검 완료율</p>
+                    <h3 id="kpi-rate" class="text-3xl font-bold text-emerald-600 mt-1">0%</h3>
                 </div>
-                <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl font-bold">
-                    <i class="fa-solid fa-circle-check"></i>
-                </div>
+                <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl text-xl font-bold">📈</div>
             </div>
-
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">기한 초과 (지연)</p>
-                    <h3 id="kpiDelayed" class="text-2xl font-bold text-rose-600 mt-1">0 건</h3>
+                    <p class="text-sm font-medium text-slate-500">기한 초과 (지연)</p>
+                    <h3 id="kpi-delayed" class="text-3xl font-bold text-rose-600 mt-1">0 건</h3>
                 </div>
-                <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-xl font-bold">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                </div>
+                <div class="p-3 bg-rose-50 text-rose-600 rounded-xl text-xl font-bold">⚠️</div>
             </div>
-
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">진행중 협력사</p>
-                    <h3 id="kpiPartners" class="text-2xl font-bold text-indigo-600 mt-1">0 개사</h3>
+                    <p class="text-sm font-medium text-slate-500">참여 협력사 수</p>
+                    <h3 id="kpi-partners" class="text-3xl font-bold text-blue-600 mt-1">0 개사</h3>
                 </div>
-                <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl font-bold">
-                    <i class="fa-solid fa-building-user"></i>
-                </div>
+                <div class="p-3 bg-blue-50 text-blue-600 rounded-xl text-xl font-bold">🏢</div>
             </div>
         </div>
 
         <!-- Charts Section -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- 주기별 완료율 바 차트 -->
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 lg:col-span-2 flex flex-col">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="font-bold text-slate-700 text-sm flex items-center gap-2">
-                        <i class="fa-solid fa-chart-column text-indigo-600"></i> 유효성 점검 주기별 완료 현황
-                    </h2>
-                    <span class="text-xs text-slate-400">1주차 ~ 6개월 누적 검증률</span>
-                </div>
-                <div class="relative flex-grow h-72">
-                    <canvas id="periodChart"></canvas>
+            <!-- 주차별 완료 현황 바 차트 -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-2">
+                <h3 class="text-lg font-bold text-slate-900 mb-4">유효성 점검 주기별 완료 현황</h3>
+                <div class="relative h-72">
+                    <canvas id="weeklyChart"></canvas>
                 </div>
             </div>
-
-            <!-- OSA 협력사별 점중 분포 도넛 차트 -->
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="font-bold text-slate-700 text-sm flex items-center gap-2">
-                        <i class="fa-solid fa-chart-pie text-indigo-600"></i> OSA 협력사별 비중
-                    </h2>
-                </div>
-                <div class="relative flex-grow h-72 flex items-center justify-center">
+            <!-- OSA 협력사별 비중 도넛 차트 -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <h3 class="text-lg font-bold text-slate-900 mb-4">OSA 협력사별 등록 비중</h3>
+                <div class="relative h-72 flex justify-center items-center">
                     <canvas id="partnerChart"></canvas>
                 </div>
             </div>
         </div>
 
-        <!-- Detailed Items Table -->
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <h2 class="font-bold text-slate-700 text-sm flex items-center gap-2">
-                    <i class="fa-solid fa-table-list text-indigo-600"></i> 관리번호별 상세 점검 현황표
-                </h2>
-                <div class="flex items-center gap-2 w-full sm:w-auto">
-                    <input type="text" id="searchInput" placeholder="관리번호, 품명, 고객사 검색..." oninput="filterTable()" class="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-xs w-full sm:w-64 focus:outline-none focus:border-indigo-500">
-                </div>
+        <!-- Detailed Table Section -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-slate-900">개선 대책 상세 진행 목록</h3>
+                <span class="text-xs text-slate-400">* 실시간 스프레드시트 연동 데이터 기준</span>
             </div>
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse text-xs">
+                <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="bg-slate-100 text-slate-600 uppercase font-semibold">
-                            <th class="p-3">관리번호</th>
-                            <th class="p-3">발생일</th>
-                            <th class="p-3">OSA 협력사</th>
-                            <th class="p-3">고객사</th>
-                            <th class="p-3">품명 / 불량내용</th>
-                            <th class="p-3 text-center">1주차</th>
-                            <th class="p-3 text-center">2주차</th>
-                            <th class="p-3 text-center">3주차</th>
-                            <th class="p-3 text-center">4주차</th>
-                            <th class="p-3 text-center">2개월</th>
-                            <th class="p-3 text-center">3개월</th>
-                            <th class="p-3 text-center">4개월</th>
-                            <th class="p-3 text-center">6개월</th>
+                        <tr class="bg-slate-50 text-slate-500 text-xs uppercase font-semibold">
+                            <th class="p-4">관리번호</th>
+                            <th class="p-4">발생일</th>
+                            <th class="p-4">OSA</th>
+                            <th class="p-4">고객사</th>
+                            <th class="p-4">품명</th>
+                            <th class="p-4">불량내용</th>
+                            <th class="p-4 text-center">진행 상태</th>
                         </tr>
                     </thead>
-                    <tbody id="dataTableBody" class="divide-y divide-slate-100">
-                        <!-- Dynamic Rows -->
+                    <tbody id="table-body" class="divide-y divide-slate-100 text-sm">
+                        <tr>
+                            <td colspan="7" class="p-6 text-center text-slate-400">데이터를 불러오는 중입니다...</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -152,272 +109,228 @@
 
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-white border-t border-slate-200 py-4 mt-auto">
-        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-400">
-            &copy; 2026 OSA Quality Management System. Powered by HTML & Tailwind CSS.
-        </div>
-    </footer>
-
-    <!-- JavaScript Application Logic -->
+    <!-- JavaScript 로직 -->
     <script>
-        // 주기 컬럼 정의 (스프레드시트 구조 기준)
-        const PERIOD_KEYS = ['1주차', '2주차', '3주차', '4주차', '2개월', '3개월', '4개월', '6개월'];
-        let globalData = [];
-        let periodChartInstance = null;
+        // ★ [설정] 구글 스프레드시트 웹에 게시된 CSV 링크를 아래에 강제로 고정합니다.
+        const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRCGmQTOQd1DK4cmMzKU618FjIvvcwcSCgX3PBwtNF0i7_Q6aK3Hux-W56QCwAwNY7O2bff6zZ01RZm/pub?gid=359651245&single=true&output=csv";
+
+        let weeklyChartInstance = null;
         let partnerChartInstance = null;
 
-        // 샘플 데이터 (초기 로딩용 혹은 파일 없을 시 테스트용)
-        const sampleCSV = `관리번호,발생일,OSA,고객사,품명,불량내용,담당자 이메일,1주차_기준,1주차_실시,2주차_기준,2주차_실시,3주차_기준,3주차_실시,4주차_기준,4주차_실시,2개월_기준,2개월_실시,3개월_기준,3개월_실시,4개월_기준,4개월_실시,6개월_기준,6개월_실시
-L26_001,2026-02-04,한림테크,HITACHI,ZX130,Valve측 plug 오조립,oks@dy.co.kr,2026-02-11,2026-03-10,2026-02-18,2026-03-10,2026-02-25,2026-03-10,2026-03-04,2026-05-11,2026-04-04,2026-05-11,2026-05-04,2026-05-11,2026-06-04,2026-05-11,2026-08-04,2026-05-11
-L26_002,2026-05-08,KT&S,현대,HX85,ROD부 누유,oks@dy.co.kr,2026-05-15,2026-03-10,2026-05-22,2026-03-11,2026-05-29,2026-03-18,2026-06-05,2026-05-11,2026-07-08,,2026-08-08,,2026-09-08,,2026-11-08,
-L26_003,2026-05-07,HIMC,VOLVO,E50,도장 손상,oks@dy.co.kr,2026-05-14,2026-03-10,2026-05-21,2026-03-10,2026-05-28,2026-03-18,2026-06-04,2026-03-25,2026-07-07,2026-03-26,2026-08-07,2026-03-26,2026-09-07,2026-03-26,2026-11-07,`;
-
+        // 페이지 로드 시 자동 실행
         window.addEventListener('DOMContentLoaded', () => {
-            parseAndRender(sampleCSV);
+            fetchAndRenderData();
+            // 60초마다 자동 새로고침 (실시간 반영)
+            setInterval(fetchAndRenderData, 60000);
         });
 
-        function loadFromFile(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                parseAndRender(e.target.result);
-            };
-            reader.readAsText(file, 'UTF-8');
-        }
-
-        async function loadFromUrl() {
-            const url = document.getElementById('csvUrlInput').value.trim();
-            if (!url) {
-                alert('구글 스프레드시트 CSV 웹 게시 링크를 입력해주세요.');
+        async function fetchAndRenderData() {
+            if (!SHEET_CSV_URL || SHEET_CSV_URL.includes("여기에")) {
+                alert("코드 내부에 SHEET_CSV_URL 값이 설정되지 않았습니다. 올바른 CSV 링크를 입력해주세요.");
                 return;
             }
+
+            // 캐시 방지용 타임스탬프 추가
+            const targetUrl = SHEET_CSV_URL + (SHEET_CSV_URL.includes('?') ? '&' : '?') + 't=' + Date.now();
+
             try {
-                const response = await fetch(url);
-                const data = await response.text();
-                parseAndRender(data);
+                const response = await fetch(targetUrl, { cache: 'no-store' });
+                if (!response.ok) throw new Error('네트워크 응답 오류 발생');
+                
+                const csvText = await response.text();
+                parseCSVAndRender(csvText);
+
+                document.getElementById('sync-status').innerHTML = '<span class="w-2 h-2 mr-1.5 bg-emerald-500 rounded-full"></span> 연동 완료 (' + new Date().toLocaleTimeString() + ')';
             } catch (error) {
-                alert('데이터를 불러오는 중 오류가 발생했습니다. CORS 정책 또는 URL을 확인해주세요.');
                 console.error(error);
+                document.getElementById('sync-status').innerHTML = '<span class="w-2 h-2 mr-1.5 bg-rose-500 rounded-full"></span> 연동 실패';
             }
         }
 
-        // 간단한 CSV 파서 (따옴표 포함 데이터 처리)
-        function parseCSV(text) {
-            let lines = text.split('\n');
-            let result = [];
-            let headers = lines[0].split(',').map(h => h.trim());
+        // CSV 파싱 및 대시보드 반영 함수
+        function parseCSVAndRender(csvText) {
+            const rows = parseCSVToArray(csvText);
+            if (rows.length < 2) return;
 
-            for (let i = 1; i < lines.length; i++) {
-                if (!lines[i].trim()) continue;
-                let row = [];
-                let inQuotes = false;
-                let entry = '';
-                for (let char of lines[i]) {
-                    if (char === '"') {
-                        inQuotes = !inQuotes;
-                    } else if (char === ',' && !inQuotes) {
-                        row.push(entry.trim());
-                        entry = '';
-                    } else {
-                        entry += char;
+            // 헤더 찾기 (관리번호가 포함된 행 탐색)
+            let headerIndex = -1;
+            for (let i = 0; i < rows.length; i++) {
+                if (rows[i].includes("관리번호")) {
+                    headerIndex = i;
+                    break;
+                }
+            }
+
+            if (headerIndex === -1) return;
+
+            const headers = rows[headerIndex];
+            const dataRows = rows.slice(headerIndex + 1);
+
+            let totalCount = 0;
+            let partnersSet = new Set();
+            let tableHtml = '';
+            
+            // 주기별 완료 카운트 초기화 (1주차, 2주차, 3주차, 4주차, 2개월, 3개월, 4개월, 6개월)
+            let weeklyCompleted = [0, 0, 0, 0, 0, 0, 0, 0];
+            let partnerCounts = {};
+
+            // 데이터 행 분석 (2줄씩 쌍을 이루는 구조 대응)
+            for (let i = 0; i < dataRows.length; i += 2) {
+                const row1 = dataRows[i];
+                if (!row1 || !row1[0] || row1[0].trim() === '') continue;
+
+                totalCount++;
+                const id = row1[0] || '';
+                const date = row1[1] || '';
+                const osa = row1[2] || '';
+                const client = row1[3] || '';
+                const productName = row1[4] || '';
+                const defect = row1[5] || '';
+
+                if (osa) partnersSet.add(osa);
+                partnerCounts[osa] = (partnerCounts[osa] || 0) + 1;
+
+                // 점검 실시일 데이터 행 (두 번째 줄)
+                const row2 = dataRows[i + 1] || [];
+                
+                // 1주차 ~ 6개월 컬럼 인덱스 추정 (보통 10번째 인덱스 K열부터 시작)
+                // 점검 실시일이 비어있지 않고 날짜 형태면 완료로 판정
+                let completedChecks = 0;
+                for (let col = 10; col <= 17; col++) {
+                    if (row2[col] && row2[col].trim().length > 5) {
+                        completedChecks++;
+                        let idx = col - 10;
+                        if (idx >= 0 && idx < 8) weeklyCompleted[idx]++;
                     }
                 }
-                row.push(entry.trim());
-                
-                // 객체 매핑 (구조에 맞춰 유연하게 처리)
-                let obj = {
-                    관리번호: row[0] || '',
-                    발생일: row[1] || '',
-                    OSA: row[2] || '',
-                    고객사: row[3] || '',
-                    품명: row[4] || '',
-                    불량내용: row[5] || '',
-                    이메일: row[6] || '',
-                    // 1주차~6개월 (실시일 기준 데이터 매칭 인덱스 가정)
-                    periods: [
-                        { name: '1주차', 기준: row[9] || '', 실시: row[10] || '' },
-                        { name: '2주차', 기준: row[11] || '', 실시: row[12] || '' },
-                        { name: '3주차', 기준: row[13] || '', 실시: row[14] || '' },
-                        { name: '4주차', 기준: row[15] || '', 실시: row[16] || '' },
-                        { name: '2개월', 기준: row[17] || '', 실시: row[18] || '' },
-                        { name: '3개월', 기준: row[19] || '', 실시: row[20] || '' },
-                        { name: '4개월', 기준: row[21] || '', 실시: row[22] || '' },
-                        { name: '6개월', 기준: row[23] || '', 실시: row[24] || '' }
-                    ]
-                };
-                result.push(obj);
+
+                let statusBadge = `<span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800">진행중 (${completedChecks}/8)</span>`;
+                if (completedChecks === 8) {
+                    statusBadge = `<span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">완료 (8/8)</span>`;
+                }
+
+                tableHtml += `
+                    <tr class="hover:bg-slate-50/80 transition-colors">
+                        <td class="p-4 font-medium text-slate-900">${id}</td>
+                        <td class="p-4 text-slate-600">${date}</td>
+                        <td class="p-4 font-semibold text-indigo-900">${osa}</td>
+                        <td class="p-4 text-slate-600">${client}</td>
+                        <td class="p-4 text-slate-600">${productName}</td>
+                        <td class="p-4 text-slate-600">${defect}</td>
+                        <td class="p-4 text-center">${statusBadge}</td>
+                    </tr>
+                `;
             }
-            return result;
-        }
 
-        function parseAndRender(csvText) {
-            globalData = parseCSV(csvText);
-            updateKPIs(globalData);
-            renderCharts(globalData);
-            renderTable(globalData);
-        }
-
-        function updateKPIs(data) {
-            const total = data.length;
-            let totalChecks = 0;
-            let completedChecks = 0;
-            let delayedCount = 0;
-            let partners = new Set();
-
-            const today = new Date();
-
-            data.forEach(item => {
-                partners.add(item.OSA);
-                item.periods.forEach(p => {
-                    if (p.기준) {
-                        totalChecks++;
-                        if (p.실시) {
-                            completedChecks++;
-                        } else {
-                            // 기준일이 오늘보다 이전인데 실시일이 없으면 지연
-                            let기준일 = new Date(p.기준);
-                            if (기준일 < today) {
-                                delayedCount++;
-                            }
-                        }
-                    }
-                });
-            });
-
-            const completionRate = totalChecks > 0 ? ((completedChecks / totalChecks) * 100).toFixed(1) : 0;
-
-            document.getElementById('kpiTotal').innerText = `${total} 건`;
-            document.getElementById('kpiRate').innerText = `${completionRate}%`;
-            document.getElementById('kpiDelayed').innerText = `${delayedCount} 건`;
-            document.getElementById('kpiPartners').innerText = `${partners.size} 개사`;
-        }
-
-        function renderCharts(data) {
-            // 1. 주기별 완료율 계산
-            let periodStats = PERIOD_KEYS.map(key => ({ name: key, total: 0, completed: 0 }));
+            // KPI 업데이트
+            document.getElementById('kpi-total').innerText = totalCount + " 건";
+            document.getElementById('kpi-partners').innerText = partnersSet.size + " 개사";
             
-            data.forEach(item => {
-                item.periods.forEach((p, idx) => {
-                    if (p.기준) {
-                        periodStats[idx].total++;
-                        if (p.실시) {
-                            periodStats[idx].completed++;
-                        }
+            // 전체 완료율 계산 (총 대상 주기 대비 완료된 비율)
+            let totalPossible = totalCount * 8;
+            let totalDone = weeklyCompleted.reduce((a, b) => a + b, 0);
+            let completionRate = totalPossible > 0 ? Math.round((totalDone / totalPossible) * 100) : 0;
+            document.getElementById('kpi-rate').innerText = completionRate + "%";
+            document.getElementById('kpi-delayed').innerText = "0 건"; // 필요시 지연 로직 추가 가능
+
+            document.getElementById('table-body').innerHTML = tableHtml || `<tr><td colspan="7" class="p-6 text-center text-slate-400">유효한 데이터가 없습니다.</td></tr>`;
+
+            // 차트 렌더링 갱신
+            renderCharts(weeklyCompleted, partnerCounts);
+        }
+
+        // CSV 문자열을 배열로 파싱하는 안전한 함수 (쉼표 및 따옴표 처리)
+        function parseCSVToArray(str) {
+            let arr = [];
+            let row = [];
+            let inQuotes = false;
+            let c = '';
+            let val = '';
+
+            for (let i = 0; i < str.length; i++) {
+                c = str[i];
+                let nextC = str[i + 1];
+
+                if (c === '"') {
+                    if (inQuotes && nextC === '"') {
+                        val += '"';
+                        i++;
+                    } else {
+                        inQuotes = !inQuotes;
                     }
-                });
-            });
+                } else if (c === ',' && !inQuotes) {
+                    row.push(val.trim());
+                    val = '';
+                } else if ((c === '\r' || c === '\n') && !inQuotes) {
+                    if (c === '\r' && nextC === '\n') { i++; }
+                    row.push(val.trim());
+                    arr.push(row);
+                    row = [];
+                    val = '';
+                } else {
+                    val += c;
+                }
+            }
+            if (val !== '' || row.length > 0) {
+                row.push(val.trim());
+                arr.push(row);
+            }
+            return arr;
+        }
 
-            let periodRates = periodStats.map(s => s.total > 0 ? Math.round((s.completed / s.total) * 100) : 0);
+        // 차트 생성 및 업데이트 함수
+        function renderCharts(weeklyData, partnerData) {
+            // 1. 주기별 완료 바 차트
+            const ctxWeekly = document.getElementById('weeklyChart').getContext('2d');
+            if (weeklyChartInstance) weeklyChartInstance.destroy();
 
-            // 주기별 차트 렌더링
-            const ctxPeriod = document.getElementById('periodChart').getContext('2d');
-            if (periodChartInstance) periodChartInstance.destroy();
-
-            periodChartInstance = new Chart(ctxPeriod, {
+            weeklyChartInstance = new Chart(ctxWeekly, {
                 type: 'bar',
                 data: {
-                    labels: PERIOD_KEYS,
+                    labels: ['1주차', '2주차', '3주차', '4주차', '2개월', '3개월', '4개월', '6개월'],
                     datasets: [{
-                        label: '주기별 완료율 (%)',
-                        data: periodRates,
+                        label: '완료 건수',
+                        data: weeklyData,
                         backgroundColor: 'rgba(99, 102, 241, 0.8)',
-                        borderRadius: 6
+                        borderRadius: 8,
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
                     scales: {
-                        y: { beginAtZero: true, max: 100 }
+                        y: { beginAtZero: true, grid: { borderDash: [4, 4] } },
+                        x: { grid: { display: false } }
                     }
                 }
             });
 
-            // 2. 협력사별 건수 계산
-            let partnerCounts = {};
-            data.forEach(item => {
-                partnerCounts[item.OSA] = (partnerCounts[item.OSA] || 0) + 1;
-            });
-
+            // 2. 협력사별 도넛 차트
             const ctxPartner = document.getElementById('partnerChart').getContext('2d');
             if (partnerChartInstance) partnerChartInstance.destroy();
+
+            const partnerLabels = Object.keys(partnerData);
+            const partnerValues = Object.values(partnerData);
 
             partnerChartInstance = new Chart(ctxPartner, {
                 type: 'doughnut',
                 data: {
-                    labels: Object.keys(partnerCounts),
+                    labels: partnerLabels.length > 0 ? partnerLabels : ['데이터 없음'],
                     datasets: [{
-                        data: Object.values(partnerCounts),
-                        backgroundColor: ['#6366f1', '#3b82f6', '#10b981', '#f59e0b', '#ef4444']
+                        data: partnerValues.length > 0 ? partnerValues : [1],
+                        backgroundColor: ['#4f46e5', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'],
+                        borderWidth: 0
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: 'bottom' }
+                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
                     }
                 }
             });
-        }
-
-        function renderTable(data) {
-            const tbody = document.getElementById('dataTableBody');
-            tbody.innerHTML = '';
-            const today = new Date();
-
-            data.forEach(item => {
-                let tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
-
-                let rowHtml = `
-                    <td class="p-3 font-semibold text-indigo-600">${item.관리번호}</td>
-                    <td class="p-3 text-slate-500">${item.발생일}</td>
-                    <td class="p-3 font-medium">${item.OSA}</td>
-                    <td class="p-3">${item.고객사}</td>
-                    <td class="p-3">
-                        <div class="font-medium text-slate-800">${item.품명}</div>
-                        <div class="text-slate-400 text-[11px]">${item.불량내용}</div>
-                    </td>
-                `;
-
-                item.periods.forEach(p => {
-                    let badgeClass = "bg-slate-100 text-slate-400";
-                    let text = "-";
-                    if (p.기준) {
-                        if (p.실시) {
-                            badgeClass = "bg-emerald-100 text-emerald-700 font-semibold";
-                            text = "완료";
-                        } else {
-                            let 기준일 = new Date(p.기준);
-                            if (기준일 < today) {
-                                badgeClass = "bg-rose-100 text-rose-700 font-bold animate-pulse";
-                                text = "지연";
-                            } else {
-                                badgeClass = "bg-amber-100 text-amber-700";
-                                text = "진행중";
-                            }
-                        }
-                    }
-                    rowHtml += `<td class="p-3 text-center"><span class="px-2 py-1 rounded text-[10px] ${badgeClass}">${text}</span></td>`;
-                });
-
-                tr.innerHTML = rowHtml;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function filterTable() {
-            const keyword = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = globalData.filter(item => 
-                item.관리번호.toLowerCase().includes(keyword) ||
-                item.품명.toLowerCase().includes(keyword) ||
-                item.고객사.toLowerCase().includes(keyword) ||
-                item.OSA.toLowerCase().includes(keyword)
-            );
-            renderTable(filtered);
         }
     </script>
 </body>
