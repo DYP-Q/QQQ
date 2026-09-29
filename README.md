@@ -111,7 +111,7 @@
 
     <!-- JavaScript 로직 -->
     <script>
-        // ★ [설정] 구글 스프레드시트 웹에 게시된 CSV 링크를 아래에 강제로 고정합니다.
+        // 제공해주신 구글 스프레드시트 웹에 게시된 CSV 링크 반영 완료
         const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRCGmQTOQd1DK4cmMzKU618FjIvvcwcSCgX3PBwtNF0i7_Q6aK3Hux-W56QCwAwNY7O2bff6zZ01RZm/pub?gid=359651245&single=true&output=csv";
 
         let weeklyChartInstance = null;
@@ -125,12 +125,7 @@
         });
 
         async function fetchAndRenderData() {
-            if (!SHEET_CSV_URL || SHEET_CSV_URL.includes("여기에")) {
-                alert("코드 내부에 SHEET_CSV_URL 값이 설정되지 않았습니다. 올바른 CSV 링크를 입력해주세요.");
-                return;
-            }
-
-            // 캐시 방지용 타임스탬프 추가
+            // 브라우저 캐시를 방지하기 위해 타임스탬프 추가
             const targetUrl = SHEET_CSV_URL + (SHEET_CSV_URL.includes('?') ? '&' : '?') + 't=' + Date.now();
 
             try {
@@ -193,8 +188,7 @@
                 // 점검 실시일 데이터 행 (두 번째 줄)
                 const row2 = dataRows[i + 1] || [];
                 
-                // 1주차 ~ 6개월 컬럼 인덱스 추정 (보통 10번째 인덱스 K열부터 시작)
-                // 점검 실시일이 비어있지 않고 날짜 형태면 완료로 판정
+                // 1주차 ~ 6개월 컬럼 인덱스 (K열 ~ R열 해당하는 10 ~ 17 인덱스)
                 let completedChecks = 0;
                 for (let col = 10; col <= 17; col++) {
                     if (row2[col] && row2[col].trim().length > 5) {
@@ -226,12 +220,12 @@
             document.getElementById('kpi-total').innerText = totalCount + " 건";
             document.getElementById('kpi-partners').innerText = partnersSet.size + " 개사";
             
-            // 전체 완료율 계산 (총 대상 주기 대비 완료된 비율)
+            // 전체 완료율 계산
             let totalPossible = totalCount * 8;
             let totalDone = weeklyCompleted.reduce((a, b) => a + b, 0);
             let completionRate = totalPossible > 0 ? Math.round((totalDone / totalPossible) * 100) : 0;
             document.getElementById('kpi-rate').innerText = completionRate + "%";
-            document.getElementById('kpi-delayed').innerText = "0 건"; // 필요시 지연 로직 추가 가능
+            document.getElementById('kpi-delayed').innerText = "0 건";
 
             document.getElementById('table-body').innerHTML = tableHtml || `<tr><td colspan="7" class="p-6 text-center text-slate-400">유효한 데이터가 없습니다.</td></tr>`;
 
@@ -239,7 +233,7 @@
             renderCharts(weeklyCompleted, partnerCounts);
         }
 
-        // CSV 문자열을 배열로 파싱하는 안전한 함수 (쉼표 및 따옴표 처리)
+        // CSV 문자열을 배열로 파싱하는 안전한 함수
         function parseCSVToArray(str) {
             let arr = [];
             let row = [];
