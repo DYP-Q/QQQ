@@ -50,7 +50,7 @@
                     <p class="text-sm font-medium text-slate-500">기한 초과 (지연)</p>
                     <h3 id="kpi-delayed" class="text-3xl font-bold text-amber-600 mt-1">0 건</h3>
                 </div>
-                <div class="p-3 bg-amber-50 text-amber-600 rounded-xl text-xl font-bold">⚠️️</div>
+                <div class="p-3 bg-amber-50 text-amber-600 rounded-xl text-xl font-bold">⚠</div>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
                 <div>
@@ -137,14 +137,16 @@
             }
         }
 
-        // 날짜 문자열을 Date 객체로 변환하는 헬퍼 함수
         function parseDate(str) {
             if (!str) return null;
             let clean = str.replace(/\./g, '-').replace(/\s+/g, ' ').trim();
             let datePart = clean.split(' ')[0];
             let parts = datePart.split('-');
             if (parts.length >= 3) {
-                return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+                let y = parseInt(parts[0]);
+                let m = parseInt(parts[1]) - 1;
+                let d = parseInt(parts[2]);
+                return new Date(y, m, d);
             }
             return null;
         }
@@ -182,7 +184,7 @@
                 if (row1 && row1[0] && row1[0].trim() !== '' && !row1[0].includes('점검') && !row1[0].includes('기준일')) {
                     const id = row1[0].trim();
 
-                    // 숨겨진 행 (L26_001, L26_002, L26_003) 완벽 제외
+                    // 숨겨진 행 완벽 제외
                     if (['L26_001', 'L26_002', 'L26_003'].includes(id)) {
                         i++;
                         continue;
@@ -198,7 +200,6 @@
                     if (osa) partnersSet.add(osa);
                     partnerCounts[osa] = (partnerCounts[osa] || 0) + 1;
 
-                    // 점검 실시일 행 탐색
                     let rowStandard = [];
                     let rowExecution = [];
                     
@@ -217,7 +218,6 @@
                         }
                     }
 
-                    let itemHasDelay = false;
                     let gaugeHtml = '<div class="flex space-x-1.5 items-center">';
 
                     for (let col = 10; col <= 17; col++) {
@@ -229,21 +229,32 @@
                             let dtExec = parseDate(execVal);
                             let dtStd = parseDate(stdVal);
 
-                            let isDelayed = false;
-                            if (dtExec && dtStd && dtExec > dtStd) {
-                                isDelayed = true;
-                                itemHasDelay = true;
-                                delayedCount++;
-                            }
+                            let badgeColor = 'bg-emerald-500 text-white'; // 기본 초록색
+                            let statusText = '정상 완료';
 
-                            if (!isDelayed) {
+                            if (dtExec && dtStd) {
+                                let diffTime = dtExec - dtStd;
+                                let diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); // 실시일 - 기준일 (양수면 늦게 함)
+
+                                // 기준일 대비 2일 이내(또는 빨리 한 경우) -> 초록색
+                                // 3일 ~ 5일 초과 지연 -> 주황색
+                                // 5일 초과 지연 -> 붉은색
+                                if (diffDays > 5) {
+                                    badgeColor = 'bg-rose-500 text-white'; // 붉은색 (5일 초과)
+                                    statusText = `지연 (${diffDays}일 초과)`;
+                                    delayedCount++;
+                                } else if (diffDays > 2) {
+                                    badgeColor = 'bg-amber-500 text-white'; // 주황색 (3~5일 이내)
+                                    statusText = `지연 (${diffDays}일 초과)`;
+                                    delayedCount++;
+                                } else {
+                                    weeklyCompleted[idx]++;
+                                }
+                            } else {
                                 weeklyCompleted[idx]++;
                             }
 
-                            // 지연인 경우 주황색(bg-amber-500), 정상 완료인 경우 초록색(bg-emerald-500)
-                            let badgeColor = isDelayed ? 'bg-amber-500 text-white' : 'bg-emerald-500 text-white';
-                            let titleText = `${periodLabels[idx]} 완료 (${execVal})${isDelayed ? ' [기한 초과]' : ''}`;
-                            
+                            let titleText = `${periodLabels[idx]} 완료 (${execVal}) - ${statusText}`;
                             gaugeHtml += `<span class="px-2 py-1 text-xs font-bold rounded ${badgeColor} shadow-sm" title="${titleText}">${periodLabels[idx]}</span>`;
                         } else {
                             gaugeHtml += `<span class="px-2 py-1 text-xs font-semibold rounded bg-slate-200 text-slate-500" title="${periodLabels[idx]} 미완료">${periodLabels[idx]}</span>`;
@@ -251,7 +262,6 @@
                     }
                     gaugeHtml += '</div>';
 
-                    // 2행 구조 테이블 행 작성
                     tableHtml += `
                         <tr class="hover:bg-slate-50/50 transition-colors">
                             <td class="p-3 font-bold text-slate-900" rowspan="2" style="vertical-align: middle;">${id}</td>
@@ -274,7 +284,6 @@
                 i++;
             }
 
-            // KPI 업데이트
             document.getElementById('kpi-total').innerText = totalCount + " 건";
             document.getElementById('kpi-partners').innerText = partnersSet.size + " 개사";
             document.getElementById('kpi-delayed').innerText = delayedCount + " 건";
