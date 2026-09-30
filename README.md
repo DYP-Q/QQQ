@@ -95,7 +95,7 @@
                             <th class="p-4">고객사</th>
                             <th class="p-4">품명</th>
                             <th class="p-4">불량내용</th>
-                            <th class="p-4 text-center">진행 상태</th>
+                            <th class="p-4 text-center">기간별 진행 상태 (1주~6개월)</th>
                         </tr>
                     </thead>
                     <tbody id="table-body" class="divide-y divide-slate-100 text-sm">
@@ -144,7 +144,6 @@
             const rows = parseCSVToArray(csvText);
             if (rows.length < 2) return;
 
-            // 헤더 찾기 (관리번호가 포함된 행 탐색)
             let headerIndex = -1;
             for (let i = 0; i < rows.length; i++) {
                 if (rows[i].includes("관리번호")) {
@@ -164,12 +163,12 @@
             let weeklyCompleted = [0, 0, 0, 0, 0, 0, 0, 0];
             let partnerCounts = {};
 
-            // 스마트 동적 스캐닝 루프 (행이 추가되어도 누락 없이 완벽 탐색)
+            const periodLabels = ['1주', '2주', '3주', '4주', '2달', '3달', '4달', '6달'];
+
             let i = 0;
             while (i < dataRows.length) {
                 const row = dataRows[i];
                 
-                // 유효한 관리번호 행 탐색 (비어있지 않고 키워드가 아닌 경우)
                 if (row && row[0] && row[0].trim() !== '' && !row[0].includes('점검') && !row[0].includes('기준일')) {
                     const id = row[0] || '';
                     const date = row[1] || '';
@@ -182,16 +181,13 @@
                     if (osa) partnersSet.add(osa);
                     partnerCounts[osa] = (partnerCounts[osa] || 0) + 1;
 
-                    // 다음 행들 중에서 점검 실시일 데이터를 담고 있는 행을 동적으로 탐색
                     let row2 = [];
                     for (let k = 1; k <= 3; k++) {
                         if (i + k < dataRows.length) {
                             let candidate = dataRows[i + k];
-                            // 만약 다음 행이 새로운 관리번호라면 실시일 행이 없는 것임
                             if (candidate[0] && candidate[0].trim() !== '' && !candidate[0].includes('점검')) {
                                 break;
                             }
-                            // 실시일 데이터가 포함된 행을 찾으면 확정
                             if (candidate.some(cell => cell.includes('점검 실시일') || cell.match(/\d{4}-\d{2}-\d{2}/))) {
                                 row2 = candidate;
                                 break;
@@ -199,20 +195,23 @@
                         }
                     }
 
-                    // 1주차 ~ 6개월 완료 체크 (인덱스 10 ~ 17)
+                    // 기간별 세그먼트 게이지 생성 (1주차 ~ 6개월)
+                    let gaugeHtml = '<div class="flex space-x-1 items-center justify-center">';
                     let completedChecks = 0;
+
                     for (let col = 10; col <= 17; col++) {
-                        if (row2[col] && row2[col].trim().length > 5) {
+                        let idx = col - 10;
+                        let isDone = (row2[col] && row2[col].trim().length > 5);
+                        
+                        if (isDone) {
                             completedChecks++;
-                            let idx = col - 10;
                             if (idx >= 0 && idx < 8) weeklyCompleted[idx]++;
+                            gaugeHtml += `<span class="px-1.5 py-1 text-[11px] font-bold rounded bg-emerald-500 text-white shadow-sm" title="${periodLabels[idx]} 완료: ${row2[col]}">${periodLabels[idx]}</span>`;
+                        } else {
+                            gaugeHtml += `<span class="px-1.5 py-1 text-[11px] font-semibold rounded bg-slate-200 text-slate-500" title="${periodLabels[idx]} 미완료">${periodLabels[idx]}</span>`;
                         }
                     }
-
-                    let statusBadge = `<span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800">진행중 (${completedChecks}/8)</span>`;
-                    if (completedChecks === 8) {
-                        statusBadge = `<span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">완료 (8/8)</span>`;
-                    }
+                    gaugeHtml += '</div>';
 
                     tableHtml += `
                         <tr class="hover:bg-slate-50/80 transition-colors">
@@ -222,7 +221,7 @@
                             <td class="p-4 text-slate-600">${client}</td>
                             <td class="p-4 text-slate-600">${productName}</td>
                             <td class="p-4 text-slate-600">${defect}</td>
-                            <td class="p-4 text-center">${statusBadge}</td>
+                            <td class="p-4 text-center">${gaugeHtml}</td>
                         </tr>
                     `;
                 }
@@ -241,7 +240,6 @@
 
             document.getElementById('table-body').innerHTML = tableHtml || `<tr><td colspan="7" class="p-6 text-center text-slate-400">유효한 데이터가 없습니다.</td></tr>`;
 
-            // 차트 갱신
             renderCharts(weeklyCompleted, partnerCounts);
         }
 
