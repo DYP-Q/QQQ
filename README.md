@@ -6,102 +6,89 @@
     <title>OSA 개선 대책 유효성 점검 대시보드</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen">
 
-    <!-- Header -->
+    <!-- Header (슬림하게 폭 조정) -->
     <header class="bg-indigo-900 text-white shadow-md">
-        <div class="max-w-7xl mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center">
             <div>
-                <h1 class="text-2xl font-bold">OSA 개선 대책 유효성 점검 대시보드</h1>
-                <p class="text-indigo-200 text-sm mt-1">주기별 자주 검증 진척도 및 현장 품질 관리 실시간 모니터링</p>
+                <h1 class="text-xl font-bold">OSA 개선 대책 유효성 점검 대시보드</h1>
+                <p class="text-indigo-200 text-xs mt-0.5">주기별 자주 검증 진척도 및 현장 품질 관리 실시간 모니터링</p>
             </div>
-            <div class="mt-4 md:mt-0 flex items-center space-x-3">
-                <!-- 원본 스프레드시트 연결 링크 버튼 -->
+            <div class="mt-2 md:mt-0 flex items-center space-x-3">
                 <a href="https://docs.google.com/spreadsheets/d/1CAAK11qrimDmHXvii7zRcUaWFTY6ENMT-LB7q5nrJz4/edit?gid=359651245#gid=359651245" 
                    target="_blank" 
-                   class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-800 hover:bg-indigo-700 text-indigo-100 transition-colors border border-indigo-700 shadow-sm">
+                   class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-indigo-800 hover:bg-indigo-700 text-indigo-100 transition-colors border border-indigo-700 shadow-sm">
                     📊 원본 스프레드시트 열기
                 </a>
-                <!-- 실시간 연동 상태 표시 -->
-                <span id="sync-status" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
-                    <span class="w-2 h-2 mr-1.5 bg-emerald-500 rounded-full animate-pulse"></span> 자동 실시간 연동 중
+                <span id="sync-status" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                    <span class="w-2 h-2 mr-1.5 bg-emerald-500 rounded-full animate-pulse"></span> 연동 중
                 </span>
             </div>
         </div>
     </header>
 
     <!-- Main Container -->
-    <main class="max-w-7xl mx-auto px-4 py-8 space-y-8">
+    <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
 
         <!-- KPI Cards Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-slate-500">전체 관리 항목</p>
-                    <h3 id="kpi-total" class="text-3xl font-bold text-slate-900 mt-1">0 건</h3>
+                    <p class="text-xs font-medium text-slate-500">전체 관리 항목</p>
+                    <h3 id="kpi-total" class="text-2xl font-bold text-slate-900 mt-1">0 건</h3>
                 </div>
-                <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl text-xl font-bold">📋</div>
+                <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl text-lg font-bold">📋</div>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-slate-500">전체 점검 완료율</p>
-                    <h3 id="kpi-rate" class="text-3xl font-bold text-emerald-600 mt-1">0%</h3>
+                    <p class="text-xs font-medium text-slate-500">전체 점검 완료율</p>
+                    <h3 id="kpi-rate" class="text-2xl font-bold text-emerald-600 mt-1">0%</h3>
                 </div>
-                <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl text-xl font-bold">📈</div>
+                <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl text-lg font-bold">📈</div>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-slate-500">기한 초과 (지연)</p>
-                    <h3 id="kpi-delayed" class="text-3xl font-bold text-amber-600 mt-1">0 건</h3>
+                    <p class="text-xs font-medium text-slate-500">기한 초과 (지연)</p>
+                    <h3 id="kpi-delayed" class="text-2xl font-bold text-amber-600 mt-1">0 건</h3>
                 </div>
-                <div class="p-3 bg-amber-50 text-amber-600 rounded-xl text-xl font-bold">⚠</div>
+                <div class="p-3 bg-amber-50 text-amber-600 rounded-xl text-lg font-bold">⚠</div>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-slate-500">참여 협력사 수</p>
-                    <h3 id="kpi-partners" class="text-3xl font-bold text-blue-600 mt-1">0 개사</h3>
+                    <p class="text-xs font-medium text-slate-500">참여 협력사 수</p>
+                    <h3 id="kpi-partners" class="text-2xl font-bold text-blue-600 mt-1">0 개사</h3>
                 </div>
-                <div class="p-3 bg-blue-50 text-blue-600 rounded-xl text-xl font-bold">🏢</div>
-            </div>
-        </div>
-
-        <!-- Charts Section -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- 주차별 완료 현황 바 차트 -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-2">
-                <h3 class="text-lg font-bold text-slate-900 mb-4">유효성 점검 주기별 완료 현황</h3>
-                <div class="relative h-72">
-                    <canvas id="weeklyChart"></canvas>
-                </div>
-            </div>
-            <!-- OSA 협력사별 비중 도넛 차트 -->
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                <h3 class="text-lg font-bold text-slate-900 mb-4">OSA 협력사별 등록 비중</h3>
-                <div class="relative h-72 flex justify-center items-center">
-                    <canvas id="partnerChart"></canvas>
-                </div>
+                <div class="p-3 bg-blue-50 text-blue-600 rounded-xl text-lg font-bold">🏢</div>
             </div>
         </div>
 
         <!-- Detailed Table Section -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <div class="p-6 border-b border-slate-100 flex justify-between items-center">
-                <h3 class="text-lg font-bold text-slate-900">개선 대책 상세 진행 목록</h3>
-                <span class="text-xs text-slate-400">* 실시간 스프레드시트 연동 데이터 기준 (2행 구조)</span>
+            <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div>
+                    <h3 class="text-base font-bold text-slate-900">개선 대책 상세 진행 목록</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">* 관리번호 표기 형식: 업체명_년도_순번</p>
+                </div>
+                <!-- 협력사별 필터 셀렉트박스 -->
+                <div class="flex items-center space-x-2">
+                    <label for="partner-filter" class="text-xs font-semibold text-slate-600">OSA 필터:</label>
+                    <select id="partner-filter" onchange="filterTable()" class="px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-700 font-medium">
+                        <option value="ALL">전체 협력사 보기</option>
+                    </select>
+                </div>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-slate-50 text-slate-500 text-xs uppercase font-semibold">
-                            <th class="p-4 w-28">관리번호</th>
-                            <th class="p-4 w-28">발생일</th>
-                            <th class="p-4 w-28">OSA</th>
-                            <th class="p-4 w-32">고객사</th>
-                            <th class="p-4 w-36">품명</th>
-                            <th class="p-4">불량내용</th>
+                            <th class="p-3.5 w-32">관리번호</th>
+                            <th class="p-3.5 w-28">발생일</th>
+                            <th class="p-3.5 w-28">OSA</th>
+                            <th class="p-3.5 w-32">고객사</th>
+                            <th class="p-3.5 w-36">품명</th>
+                            <th class="p-3.5">불량내용</th>
                         </tr>
                     </thead>
                     <tbody id="table-body" class="divide-y divide-slate-100 text-sm">
@@ -119,8 +106,7 @@
     <script>
         const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRCGmQTOQd1DK4cmMzKU618FjIvvcwcSCgX3PBwtNF0i7_Q6aK3Hux-W56QCwAwNY7O2bff6zZ01RZm/pub?gid=359651245&single=true&output=csv";
 
-        let weeklyChartInstance = null;
-        let partnerChartInstance = null;
+        let allParsedData = []; // 원본 파싱 데이터 보관용
 
         window.addEventListener('DOMContentLoaded', () => {
             fetchAndRenderData();
@@ -177,7 +163,7 @@
             let totalCount = 0;
             let delayedCount = 0;
             let partnersSet = new Set();
-            let tableHtml = '';
+            let parsedItems = [];
             
             let weeklyCompleted = [0, 0, 0, 0, 0, 0, 0, 0];
             let partnerCounts = {};
@@ -191,7 +177,7 @@
                 if (row1 && row1[0] && row1[0].trim() !== '' && !row1[0].includes('점검') && !row1[0].includes('기준일')) {
                     const id = row1[0].trim();
 
-                    // 숨겨진 행 완벽 제외
+                    // 숨겨진 행 완벽 제외[cite: 5]
                     if (['L26_001', 'L26_002', 'L26_003'].includes(id)) {
                         i++;
                         continue;
@@ -226,6 +212,7 @@
                     }
 
                     let gaugeHtml = '<div class="flex space-x-1.5 items-center">';
+                    let itemDelayed = false;
 
                     for (let col = 10; col <= 17; col++) {
                         let idx = col - 10;
@@ -236,22 +223,24 @@
                             let dtExec = parseDate(execVal);
                             let dtStd = parseDate(stdVal);
 
-                            let badgeColor = 'bg-emerald-500 text-white'; // 기본 초록색
+                            let badgeColor = 'bg-emerald-500 text-white'; // 초록색 (2일 이내)
                             let statusText = '정상 완료';
 
                             if (dtExec && dtStd) {
                                 let diffTime = dtExec - dtStd;
                                 let diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); // 실시일 - 기준일
 
-                                // 5일 초과: 붉은색, 3~5일 이내: 주황색, 2일 이내: 초록색
+                                // 5일 초과: 빨간색, 3일~5일 이내: 주황색, 2일 이내: 초록색
                                 if (diffDays > 5) {
-                                    badgeColor = 'bg-rose-500 text-white';
+                                    badgeColor = 'bg-rose-500 text-white'; // 빨간색
                                     statusText = `지연 (${diffDays}일 초과)`;
                                     delayedCount++;
+                                    itemDelayed = true;
                                 } else if (diffDays > 2) {
-                                    badgeColor = 'bg-amber-500 text-white';
+                                    badgeColor = 'bg-amber-500 text-white'; // 주황색
                                     statusText = `지연 (${diffDays}일 초과)`;
                                     delayedCount++;
+                                    itemDelayed = true;
                                 } else {
                                     weeklyCompleted[idx]++;
                                 }
@@ -267,28 +256,16 @@
                     }
                     gaugeHtml += '</div>';
 
-                    tableHtml += `
-                        <tr class="hover:bg-slate-50/50 transition-colors">
-                            <td class="p-3 font-bold text-slate-900" rowspan="2" style="vertical-align: middle;">${id}</td>
-                            <td class="p-3 text-slate-600 text-xs">${date}</td>
-                            <td class="p-3 font-semibold text-indigo-900 text-xs">${osa}</td>
-                            <td class="p-3 text-slate-600 text-xs">${client}</td>
-                            <td class="p-3 text-slate-600 text-xs">${productName}</td>
-                            <td class="p-3 text-slate-600 text-xs">${defect}</td>
-                        </tr>
-                        <tr class="hover:bg-slate-50/50 transition-colors bg-slate-50/60 border-b border-slate-200">
-                            <td class="p-3" colspan="5">
-                                <div class="flex items-center space-x-3">
-                                    <span class="text-xs font-bold text-slate-500">기간별 진행 상태:</span>
-                                    ${gaugeHtml}
-                                </div>
-                            </td>
-                        </tr>
-                    `;
+                    parsedItems.push({
+                        id, date, osa, client, productName, defect, gaugeHtml
+                    });
                 }
                 i++;
             }
 
+            allParsedData = parsedItems;
+
+            // KPI 업데이트
             document.getElementById('kpi-total').innerText = totalCount + " 건";
             document.getElementById('kpi-partners').innerText = partnersSet.size + " 개사";
             document.getElementById('kpi-delayed').innerText = delayedCount + " 건";
@@ -298,9 +275,58 @@
             let completionRate = totalPossible > 0 ? Math.round((totalDone / totalPossible) * 100) : 0;
             document.getElementById('kpi-rate').innerText = completionRate + "%";
 
-            document.getElementById('table-body').innerHTML = tableHtml || `<tr><td colspan="6" class="p-6 text-center text-slate-400">유효한 데이터가 없습니다.</td></tr>`;
+            // 필터 옵션 업데이트
+            updateFilterOptions(partnersSet);
 
-            renderCharts(weeklyCompleted, partnerCounts);
+            // 테이블 렌더링
+            renderTable(allParsedData);
+        }
+
+        function updateFilterOptions(partnersSet) {
+            const selectEl = document.getElementById('partner-filter');
+            const currentVal = selectEl.value;
+            let optionsHtml = '<option value="ALL">전체 협력사 보기</option>';
+            partnersSet.forEach(partner => {
+                optionsHtml += `<option value="${partner}">${partner}</option>`;
+            });
+            selectEl.innerHTML = optionsHtml;
+            selectEl.value = currentVal;
+        }
+
+        function filterTable() {
+            const selectedPartner = document.getElementById('partner-filter').value;
+            if (selectedPartner === 'ALL') {
+                renderTable(allParsedData);
+            } else {
+                const filtered = allParsedData.filter(item => item.osa === selectedPartner);
+                renderTable(filtered);
+            }
+        }
+
+        function renderTable(items) {
+            let tableHtml = '';
+            items.forEach(item => {
+                tableHtml += `
+                    <tr class="hover:bg-slate-50/50 transition-colors">
+                        <td class="p-3 font-bold text-slate-900" rowspan="2" style="vertical-align: middle;">${item.id}</td>
+                        <td class="p-3 text-slate-600 text-xs">${item.date}</td>
+                        <td class="p-3 font-semibold text-indigo-900 text-xs">${item.osa}</td>
+                        <td class="p-3 text-slate-600 text-xs">${item.client}</td>
+                        <td class="p-3 text-slate-600 text-xs">${item.productName}</td>
+                        <td class="p-3 text-slate-600 text-xs">${item.defect}</td>
+                    </tr>
+                    <tr class="hover:bg-slate-50/50 transition-colors bg-slate-50/60 border-b border-slate-200">
+                        <td class="p-3" colspan="5">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-xs font-bold text-slate-500">기간별 진행 상태:</span>
+                                ${item.gaugeHtml}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('table-body').innerHTML = tableHtml || `<tr><td colspan="6" class="p-6 text-center text-slate-400">조건에 해당하는 데이터가 없습니다.</td></tr>`;
         }
 
         function parseCSVToArray(str) {
@@ -339,58 +365,6 @@
                 arr.push(row);
             }
             return arr;
-        }
-
-        function renderCharts(weeklyData, partnerData) {
-            const ctxWeekly = document.getElementById('weeklyChart').getContext('2d');
-            if (weeklyChartInstance) weeklyChartInstance.destroy();
-
-            weeklyChartInstance = new Chart(ctxWeekly, {
-                type: 'bar',
-                data: {
-                    labels: ['1주차', '2주차', '3주차', '4주차', '2개월', '3개월', '4개월', '6개월'],
-                    datasets: [{
-                        label: '정상 완료 건수',
-                        data: weeklyData,
-                        backgroundColor: 'rgba(99, 102, 241, 0.8)',
-                        borderRadius: 8,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { borderDash: [4, 4] } },
-                        x: { grid: { display: false } }
-                    }
-                }
-            });
-
-            const ctxPartner = document.getElementById('partnerChart').getContext('2d');
-            if (partnerChartInstance) partnerChartInstance.destroy();
-
-            const partnerLabels = Object.keys(partnerData);
-            const partnerValues = Object.values(partnerData);
-
-            partnerChartInstance = new Chart(ctxPartner, {
-                type: 'doughnut',
-                data: {
-                    labels: partnerLabels.length > 0 ? partnerLabels : ['데이터 없음'],
-                    datasets: [{
-                        data: partnerValues.length > 0 ? partnerValues : [1],
-                        backgroundColor: ['#4f46e5', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
-                    }
-                }
-            });
         }
     </script>
 </body>
