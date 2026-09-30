@@ -18,7 +18,14 @@
                 <h1 class="text-2xl font-bold">OSA 개선 대책 유효성 점검 대시보드</h1>
                 <p class="text-indigo-200 text-sm mt-1">주기별 자주 검증 진척도 및 현장 품질 관리 실시간 모니터링</p>
             </div>
-            <div class="mt-4 md:mt-0 flex items-center space-x-2">
+            <div class="mt-4 md:mt-0 flex items-center space-x-3">
+                <!-- 원본 스프레드시트 연결 링크 버튼 -->
+                <a href="https://docs.google.com/spreadsheets/d/1CAAK11qrimDmHXvii7zRcUaWFTY6ENMT-LB7q5nrJz4/edit?gid=359651245#gid=359651245" 
+                   target="_blank" 
+                   class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-800 hover:bg-indigo-700 text-indigo-100 transition-colors border border-indigo-700 shadow-sm">
+                    📊 원본 스프레드시트 열기
+                </a>
+                <!-- 실시간 연동 상태 표시 -->
                 <span id="sync-status" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
                     <span class="w-2 h-2 mr-1.5 bg-emerald-500 rounded-full animate-pulse"></span> 자동 실시간 연동 중
                 </span>
@@ -234,17 +241,15 @@
 
                             if (dtExec && dtStd) {
                                 let diffTime = dtExec - dtStd;
-                                let diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); // 실시일 - 기준일 (양수면 늦게 함)
+                                let diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); // 실시일 - 기준일
 
-                                // 기준일 대비 2일 이내(또는 빨리 한 경우) -> 초록색
-                                // 3일 ~ 5일 초과 지연 -> 주황색
-                                // 5일 초과 지연 -> 붉은색
+                                // 5일 초과: 붉은색, 3~5일 이내: 주황색, 2일 이내: 초록색
                                 if (diffDays > 5) {
-                                    badgeColor = 'bg-rose-500 text-white'; // 붉은색 (5일 초과)
+                                    badgeColor = 'bg-rose-500 text-white';
                                     statusText = `지연 (${diffDays}일 초과)`;
                                     delayedCount++;
                                 } else if (diffDays > 2) {
-                                    badgeColor = 'bg-amber-500 text-white'; // 주황색 (3~5일 이내)
+                                    badgeColor = 'bg-amber-500 text-white';
                                     statusText = `지연 (${diffDays}일 초과)`;
                                     delayedCount++;
                                 } else {
