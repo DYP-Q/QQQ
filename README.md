@@ -48,9 +48,9 @@
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-slate-500">기한 초과 (지연)</p>
-                    <h3 id="kpi-delayed" class="text-3xl font-bold text-rose-600 mt-1">0 건</h3>
+                    <h3 id="kpi-delayed" class="text-3xl font-bold text-amber-600 mt-1">0 건</h3>
                 </div>
-                <div class="p-3 bg-rose-50 text-rose-600 rounded-xl text-xl font-bold">⚠️</div>
+                <div class="p-3 bg-amber-50 text-amber-600 rounded-xl text-xl font-bold">⚠️️</div>
             </div>
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
                 <div>
@@ -83,24 +83,23 @@
         <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
             <div class="p-6 border-b border-slate-100 flex justify-between items-center">
                 <h3 class="text-lg font-bold text-slate-900">개선 대책 상세 진행 목록</h3>
-                <span class="text-xs text-slate-400">* 실시간 스프레드시트 연동 데이터 기준 (행 자동 확장)</span>
+                <span class="text-xs text-slate-400">* 실시간 스프레드시트 연동 데이터 기준 (2행 구조)</span>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-slate-50 text-slate-500 text-xs uppercase font-semibold">
-                            <th class="p-4">관리번호</th>
-                            <th class="p-4">발생일</th>
-                            <th class="p-4">OSA</th>
-                            <th class="p-4">고객사</th>
-                            <th class="p-4">품명</th>
+                            <th class="p-4 w-28">관리번호</th>
+                            <th class="p-4 w-28">발생일</th>
+                            <th class="p-4 w-28">OSA</th>
+                            <th class="p-4 w-32">고객사</th>
+                            <th class="p-4 w-36">품명</th>
                             <th class="p-4">불량내용</th>
-                            <th class="p-4 text-center">기간별 진행 상태 (1주~6개월)</th>
                         </tr>
                     </thead>
                     <tbody id="table-body" class="divide-y divide-slate-100 text-sm">
                         <tr>
-                            <td colspan="7" class="p-6 text-center text-slate-400">데이터를 불러오는 중입니다...</td>
+                            <td colspan="6" class="p-6 text-center text-slate-400">데이터를 불러오는 중입니다...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -116,7 +115,6 @@
         let weeklyChartInstance = null;
         let partnerChartInstance = null;
 
-        // 페이지 로드 시 자동 실행 및 60초마다 자동 갱신
         window.addEventListener('DOMContentLoaded', () => {
             fetchAndRenderData();
             setInterval(fetchAndRenderData, 60000);
@@ -139,7 +137,18 @@
             }
         }
 
-        // CSV 파싱 및 동적 확장 처리 함수
+        // 날짜 문자열을 Date 객체로 변환하는 헬퍼 함수
+        function parseDate(str) {
+            if (!str) return null;
+            let clean = str.replace(/\./g, '-').replace(/\s+/g, ' ').trim();
+            let datePart = clean.split(' ')[0];
+            let parts = datePart.split('-');
+            if (parts.length >= 3) {
+                return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+            }
+            return null;
+        }
+
         function parseCSVAndRender(csvText) {
             const rows = parseCSVToArray(csvText);
             if (rows.length < 2) return;
@@ -157,6 +166,7 @@
             const dataRows = rows.slice(headerIndex + 1);
 
             let totalCount = 0;
+            let delayedCount = 0;
             let partnersSet = new Set();
             let tableHtml = '';
             
@@ -167,61 +177,97 @@
 
             let i = 0;
             while (i < dataRows.length) {
-                const row = dataRows[i];
+                const row1 = dataRows[i];
                 
-                if (row && row[0] && row[0].trim() !== '' && !row[0].includes('점검') && !row[0].includes('기준일')) {
-                    const id = row[0] || '';
-                    const date = row[1] || '';
-                    const osa = row[2] || '';
-                    const client = row[3] || '';
-                    const productName = row[4] || '';
-                    const defect = row[5] || '';
+                if (row1 && row1[0] && row1[0].trim() !== '' && !row1[0].includes('점검') && !row1[0].includes('기준일')) {
+                    const id = row1[0].trim();
+
+                    // 숨겨진 행 (L26_001, L26_002, L26_003) 완벽 제외
+                    if (['L26_001', 'L26_002', 'L26_003'].includes(id)) {
+                        i++;
+                        continue;
+                    }
+
+                    const date = row1[1] || '';
+                    const osa = row1[2] || '';
+                    const client = row1[3] || '';
+                    const productName = row1[4] || '';
+                    const defect = row1[5] || '';
 
                     totalCount++;
                     if (osa) partnersSet.add(osa);
                     partnerCounts[osa] = (partnerCounts[osa] || 0) + 1;
 
-                    let row2 = [];
+                    // 점검 실시일 행 탐색
+                    let rowStandard = [];
+                    let rowExecution = [];
+                    
                     for (let k = 1; k <= 3; k++) {
                         if (i + k < dataRows.length) {
                             let candidate = dataRows[i + k];
                             if (candidate[0] && candidate[0].trim() !== '' && !candidate[0].includes('점검')) {
                                 break;
                             }
-                            if (candidate.some(cell => cell.includes('점검 실시일') || cell.match(/\d{4}-\d{2}-\d{2}/))) {
-                                row2 = candidate;
-                                break;
+                            if (candidate.some(cell => cell.includes('점검 기준일'))) {
+                                rowStandard = candidate;
+                            }
+                            if (candidate.some(cell => cell.includes('점검 실시일'))) {
+                                rowExecution = candidate;
                             }
                         }
                     }
 
-                    // 기간별 세그먼트 게이지 생성 (1주차 ~ 6개월)
-                    let gaugeHtml = '<div class="flex space-x-1 items-center justify-center">';
-                    let completedChecks = 0;
+                    let itemHasDelay = false;
+                    let gaugeHtml = '<div class="flex space-x-1.5 items-center">';
 
                     for (let col = 10; col <= 17; col++) {
                         let idx = col - 10;
-                        let isDone = (row2[col] && row2[col].trim().length > 5);
-                        
-                        if (isDone) {
-                            completedChecks++;
-                            if (idx >= 0 && idx < 8) weeklyCompleted[idx]++;
-                            gaugeHtml += `<span class="px-1.5 py-1 text-[11px] font-bold rounded bg-emerald-500 text-white shadow-sm" title="${periodLabels[idx]} 완료: ${row2[col]}">${periodLabels[idx]}</span>`;
+                        let execVal = rowExecution[col] ? rowExecution[col].trim() : '';
+                        let stdVal = rowStandard[col] ? rowStandard[col].trim() : '';
+
+                        if (execVal.length > 5) {
+                            let dtExec = parseDate(execVal);
+                            let dtStd = parseDate(stdVal);
+
+                            let isDelayed = false;
+                            if (dtExec && dtStd && dtExec > dtStd) {
+                                isDelayed = true;
+                                itemHasDelay = true;
+                                delayedCount++;
+                            }
+
+                            if (!isDelayed) {
+                                weeklyCompleted[idx]++;
+                            }
+
+                            // 지연인 경우 주황색(bg-amber-500), 정상 완료인 경우 초록색(bg-emerald-500)
+                            let badgeColor = isDelayed ? 'bg-amber-500 text-white' : 'bg-emerald-500 text-white';
+                            let titleText = `${periodLabels[idx]} 완료 (${execVal})${isDelayed ? ' [기한 초과]' : ''}`;
+                            
+                            gaugeHtml += `<span class="px-2 py-1 text-xs font-bold rounded ${badgeColor} shadow-sm" title="${titleText}">${periodLabels[idx]}</span>`;
                         } else {
-                            gaugeHtml += `<span class="px-1.5 py-1 text-[11px] font-semibold rounded bg-slate-200 text-slate-500" title="${periodLabels[idx]} 미완료">${periodLabels[idx]}</span>`;
+                            gaugeHtml += `<span class="px-2 py-1 text-xs font-semibold rounded bg-slate-200 text-slate-500" title="${periodLabels[idx]} 미완료">${periodLabels[idx]}</span>`;
                         }
                     }
                     gaugeHtml += '</div>';
 
+                    // 2행 구조 테이블 행 작성
                     tableHtml += `
-                        <tr class="hover:bg-slate-50/80 transition-colors">
-                            <td class="p-4 font-medium text-slate-900">${id}</td>
-                            <td class="p-4 text-slate-600">${date}</td>
-                            <td class="p-4 font-semibold text-indigo-900">${osa}</td>
-                            <td class="p-4 text-slate-600">${client}</td>
-                            <td class="p-4 text-slate-600">${productName}</td>
-                            <td class="p-4 text-slate-600">${defect}</td>
-                            <td class="p-4 text-center">${gaugeHtml}</td>
+                        <tr class="hover:bg-slate-50/50 transition-colors">
+                            <td class="p-3 font-bold text-slate-900" rowspan="2" style="vertical-align: middle;">${id}</td>
+                            <td class="p-3 text-slate-600 text-xs">${date}</td>
+                            <td class="p-3 font-semibold text-indigo-900 text-xs">${osa}</td>
+                            <td class="p-3 text-slate-600 text-xs">${client}</td>
+                            <td class="p-3 text-slate-600 text-xs">${productName}</td>
+                            <td class="p-3 text-slate-600 text-xs">${defect}</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50/50 transition-colors bg-slate-50/60 border-b border-slate-200">
+                            <td class="p-3" colspan="5">
+                                <div class="flex items-center space-x-3">
+                                    <span class="text-xs font-bold text-slate-500">기간별 진행 상태:</span>
+                                    ${gaugeHtml}
+                                </div>
+                            </td>
                         </tr>
                     `;
                 }
@@ -231,19 +277,18 @@
             // KPI 업데이트
             document.getElementById('kpi-total').innerText = totalCount + " 건";
             document.getElementById('kpi-partners').innerText = partnersSet.size + " 개사";
+            document.getElementById('kpi-delayed').innerText = delayedCount + " 건";
             
             let totalPossible = totalCount * 8;
             let totalDone = weeklyCompleted.reduce((a, b) => a + b, 0);
             let completionRate = totalPossible > 0 ? Math.round((totalDone / totalPossible) * 100) : 0;
             document.getElementById('kpi-rate').innerText = completionRate + "%";
-            document.getElementById('kpi-delayed').innerText = "0 건";
 
-            document.getElementById('table-body').innerHTML = tableHtml || `<tr><td colspan="7" class="p-6 text-center text-slate-400">유효한 데이터가 없습니다.</td></tr>`;
+            document.getElementById('table-body').innerHTML = tableHtml || `<tr><td colspan="6" class="p-6 text-center text-slate-400">유효한 데이터가 없습니다.</td></tr>`;
 
             renderCharts(weeklyCompleted, partnerCounts);
         }
 
-        // 안전한 CSV 파서
         function parseCSVToArray(str) {
             let arr = [];
             let row = [];
@@ -282,7 +327,6 @@
             return arr;
         }
 
-        // 차트 렌더링 함수
         function renderCharts(weeklyData, partnerData) {
             const ctxWeekly = document.getElementById('weeklyChart').getContext('2d');
             if (weeklyChartInstance) weeklyChartInstance.destroy();
@@ -292,7 +336,7 @@
                 data: {
                     labels: ['1주차', '2주차', '3주차', '4주차', '2개월', '3개월', '4개월', '6개월'],
                     datasets: [{
-                        label: '완료 건수',
+                        label: '정상 완료 건수',
                         data: weeklyData,
                         backgroundColor: 'rgba(99, 102, 241, 0.8)',
                         borderRadius: 8,
