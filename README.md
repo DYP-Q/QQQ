@@ -83,7 +83,7 @@
         <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
             <div class="p-6 border-b border-slate-100 flex justify-between items-center">
                 <h3 class="text-lg font-bold text-slate-900">개선 대책 상세 진행 목록</h3>
-                <span class="text-xs text-slate-400">* 실시간 스프레드시트 연동 데이터 기준</span>
+                <span class="text-xs text-slate-400">* 실시간 스프레드시트 연동 데이터 기준 (행 자동 확장)</span>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
@@ -111,21 +111,18 @@
 
     <!-- JavaScript 로직 -->
     <script>
-        // 제공해주신 구글 스프레드시트 웹에 게시된 CSV 링크 반영 완료
         const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRCGmQTOQd1DK4cmMzKU618FjIvvcwcSCgX3PBwtNF0i7_Q6aK3Hux-W56QCwAwNY7O2bff6zZ01RZm/pub?gid=359651245&single=true&output=csv";
 
         let weeklyChartInstance = null;
         let partnerChartInstance = null;
 
-        // 페이지 로드 시 자동 실행
+        // 페이지 로드 시 자동 실행 및 60초마다 자동 갱신
         window.addEventListener('DOMContentLoaded', () => {
             fetchAndRenderData();
-            // 60초마다 자동 새로고침 (실시간 반영)
             setInterval(fetchAndRenderData, 60000);
         });
 
         async function fetchAndRenderData() {
-            // 브라우저 캐시를 방지하기 위해 타임스탬프 추가
             const targetUrl = SHEET_CSV_URL + (SHEET_CSV_URL.includes('?') ? '&' : '?') + 't=' + Date.now();
 
             try {
@@ -142,7 +139,7 @@
             }
         }
 
-        // CSV 파싱 및 대시보드 반영 함수
+        // CSV 파싱 및 동적 확장 처리 함수
         function parseCSVAndRender(csvText) {
             const rows = parseCSVToArray(csvText);
             if (rows.length < 2) return;
@@ -158,69 +155,84 @@
 
             if (headerIndex === -1) return;
 
-            const headers = rows[headerIndex];
             const dataRows = rows.slice(headerIndex + 1);
 
             let totalCount = 0;
             let partnersSet = new Set();
             let tableHtml = '';
             
-            // 주기별 완료 카운트 초기화 (1주차, 2주차, 3주차, 4주차, 2개월, 3개월, 4개월, 6개월)
             let weeklyCompleted = [0, 0, 0, 0, 0, 0, 0, 0];
             let partnerCounts = {};
 
-            // 데이터 행 분석 (2줄씩 쌍을 이루는 구조 대응)
-            for (let i = 0; i < dataRows.length; i += 2) {
-                const row1 = dataRows[i];
-                if (!row1 || !row1[0] || row1[0].trim() === '') continue;
-
-                totalCount++;
-                const id = row1[0] || '';
-                const date = row1[1] || '';
-                const osa = row1[2] || '';
-                const client = row1[3] || '';
-                const productName = row1[4] || '';
-                const defect = row1[5] || '';
-
-                if (osa) partnersSet.add(osa);
-                partnerCounts[osa] = (partnerCounts[osa] || 0) + 1;
-
-                // 점검 실시일 데이터 행 (두 번째 줄)
-                const row2 = dataRows[i + 1] || [];
+            // 스마트 동적 스캐닝 루프 (행이 추가되어도 누락 없이 완벽 탐색)
+            let i = 0;
+            while (i < dataRows.length) {
+                const row = dataRows[i];
                 
-                // 1주차 ~ 6개월 컬럼 인덱스 (K열 ~ R열 해당하는 10 ~ 17 인덱스)
-                let completedChecks = 0;
-                for (let col = 10; col <= 17; col++) {
-                    if (row2[col] && row2[col].trim().length > 5) {
-                        completedChecks++;
-                        let idx = col - 10;
-                        if (idx >= 0 && idx < 8) weeklyCompleted[idx]++;
+                // 유효한 관리번호 행 탐색 (비어있지 않고 키워드가 아닌 경우)
+                if (row && row[0] && row[0].trim() !== '' && !row[0].includes('점검') && !row[0].includes('기준일')) {
+                    const id = row[0] || '';
+                    const date = row[1] || '';
+                    const osa = row[2] || '';
+                    const client = row[3] || '';
+                    const productName = row[4] || '';
+                    const defect = row[5] || '';
+
+                    totalCount++;
+                    if (osa) partnersSet.add(osa);
+                    partnerCounts[osa] = (partnerCounts[osa] || 0) + 1;
+
+                    // 다음 행들 중에서 점검 실시일 데이터를 담고 있는 행을 동적으로 탐색
+                    let row2 = [];
+                    for (let k = 1; k <= 3; k++) {
+                        if (i + k < dataRows.length) {
+                            let candidate = dataRows[i + k];
+                            // 만약 다음 행이 새로운 관리번호라면 실시일 행이 없는 것임
+                            if (candidate[0] && candidate[0].trim() !== '' && !candidate[0].includes('점검')) {
+                                break;
+                            }
+                            // 실시일 데이터가 포함된 행을 찾으면 확정
+                            if (candidate.some(cell => cell.includes('점검 실시일') || cell.match(/\d{4}-\d{2}-\d{2}/))) {
+                                row2 = candidate;
+                                break;
+                            }
+                        }
                     }
-                }
 
-                let statusBadge = `<span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800">진행중 (${completedChecks}/8)</span>`;
-                if (completedChecks === 8) {
-                    statusBadge = `<span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">완료 (8/8)</span>`;
-                }
+                    // 1주차 ~ 6개월 완료 체크 (인덱스 10 ~ 17)
+                    let completedChecks = 0;
+                    for (let col = 10; col <= 17; col++) {
+                        if (row2[col] && row2[col].trim().length > 5) {
+                            completedChecks++;
+                            let idx = col - 10;
+                            if (idx >= 0 && idx < 8) weeklyCompleted[idx]++;
+                        }
+                    }
 
-                tableHtml += `
-                    <tr class="hover:bg-slate-50/80 transition-colors">
-                        <td class="p-4 font-medium text-slate-900">${id}</td>
-                        <td class="p-4 text-slate-600">${date}</td>
-                        <td class="p-4 font-semibold text-indigo-900">${osa}</td>
-                        <td class="p-4 text-slate-600">${client}</td>
-                        <td class="p-4 text-slate-600">${productName}</td>
-                        <td class="p-4 text-slate-600">${defect}</td>
-                        <td class="p-4 text-center">${statusBadge}</td>
-                    </tr>
-                `;
+                    let statusBadge = `<span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800">진행중 (${completedChecks}/8)</span>`;
+                    if (completedChecks === 8) {
+                        statusBadge = `<span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">완료 (8/8)</span>`;
+                    }
+
+                    tableHtml += `
+                        <tr class="hover:bg-slate-50/80 transition-colors">
+                            <td class="p-4 font-medium text-slate-900">${id}</td>
+                            <td class="p-4 text-slate-600">${date}</td>
+                            <td class="p-4 font-semibold text-indigo-900">${osa}</td>
+                            <td class="p-4 text-slate-600">${client}</td>
+                            <td class="p-4 text-slate-600">${productName}</td>
+                            <td class="p-4 text-slate-600">${defect}</td>
+                            <td class="p-4 text-center">${statusBadge}</td>
+                        </tr>
+                    `;
+                }
+                i++;
             }
 
             // KPI 업데이트
             document.getElementById('kpi-total').innerText = totalCount + " 건";
             document.getElementById('kpi-partners').innerText = partnersSet.size + " 개사";
             
-            // 전체 완료율 계산
             let totalPossible = totalCount * 8;
             let totalDone = weeklyCompleted.reduce((a, b) => a + b, 0);
             let completionRate = totalPossible > 0 ? Math.round((totalDone / totalPossible) * 100) : 0;
@@ -229,11 +241,11 @@
 
             document.getElementById('table-body').innerHTML = tableHtml || `<tr><td colspan="7" class="p-6 text-center text-slate-400">유효한 데이터가 없습니다.</td></tr>`;
 
-            // 차트 렌더링 갱신
+            // 차트 갱신
             renderCharts(weeklyCompleted, partnerCounts);
         }
 
-        // CSV 문자열을 배열로 파싱하는 안전한 함수
+        // 안전한 CSV 파서
         function parseCSVToArray(str) {
             let arr = [];
             let row = [];
@@ -272,9 +284,8 @@
             return arr;
         }
 
-        // 차트 생성 및 업데이트 함수
+        // 차트 렌더링 함수
         function renderCharts(weeklyData, partnerData) {
-            // 1. 주기별 완료 바 차트
             const ctxWeekly = document.getElementById('weeklyChart').getContext('2d');
             if (weeklyChartInstance) weeklyChartInstance.destroy();
 
@@ -300,7 +311,6 @@
                 }
             });
 
-            // 2. 협력사별 도넛 차트
             const ctxPartner = document.getElementById('partnerChart').getContext('2d');
             if (partnerChartInstance) partnerChartInstance.destroy();
 
