@@ -6,129 +6,268 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* GitHub Pages 마크다운 기본 스타일 간섭 방지 */
         body .markdown-body h1, body > h1:first-child { display: none !important; }
-        header h1 { border-bottom: none !important; margin: 0 !important; padding: 0 !important; }
+        
+        /* 상단 파란색 박스 헤더 스타일 */
+        .dashboard-header {
+            background-color: #262272;
+            color: #ffffff;
+            padding: 24px 36px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 24px;
+            margin-bottom: 28px;
+            box-sizing: border-box;
+        }
+        .header-left {
+            display: flex;
+            align-items: baseline;
+            gap: 20px;
+            flex-wrap: nowrap;
+            overflow: hidden;
+        }
+        .header-title {
+            font-size: 28px;
+            font-weight: 800;
+            margin: 0;
+            white-space: nowrap;
+            letter-spacing: -0.5px;
+        }
+        .header-subtitle {
+            font-size: 15px;
+            color: #c7d2fe;
+            margin: 0;
+            white-space: nowrap;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+        .btn-sheet {
+            background-color: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .btn-sheet:hover {
+            background-color: rgba(255, 255, 255, 0.22);
+        }
+        .sync-badge {
+            background-color: #dcfce7;
+            color: #15803d;
+            padding: 10px 18px;
+            border-radius: 9999px;
+            font-size: 14px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #16a34a;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        /* 현황판 6개 폰트 50% 확대 스타일 */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .kpi-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 28px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        }
+        .kpi-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .kpi-icon-box {
+            width: 66px;
+            height: 66px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            flex-shrink: 0;
+        }
+        .kpi-text-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .kpi-title {
+            font-size: 21px;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        .kpi-desc {
+            font-size: 18px;
+            color: #6b7280;
+            margin: 0;
+            white-space: nowrap;
+        }
+        .kpi-value {
+            font-size: 36px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen">
 
-    <!-- Header (줄바꿈 방지 및 슬림 레이아웃) -->
-    <header class="bg-indigo-900 text-white shadow-md">
-        <div class="max-w-7xl mx-auto px-5 py-3 flex flex-row justify-between items-center gap-4">
-            <h1 class="text-base sm:text-lg font-bold tracking-tight whitespace-nowrap text-white">
-                개선대책 유효성 점검 대시보드
-            </h1>
-            <div class="flex items-center space-x-2.5 shrink-0">
-                <a href="https://docs.google.com/spreadsheets/d/1CAAK11qrimDmHXvii7zRcUaWFTY6ENMT-LB7q5nrJz4/edit?gid=359651245#gid=359651245" 
-                   target="_blank" 
-                   class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-800 hover:bg-indigo-700 text-indigo-100 transition-colors border border-indigo-700 shadow-sm whitespace-nowrap">
-                    📊 상세 원본 시트 열기
-                </a>
-                <span id="sync-status" class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 whitespace-nowrap">
-                    <span class="w-2 h-2 mr-1.5 bg-emerald-500 rounded-full animate-pulse"></span> 연동 중
-                </span>
+    <!-- 상단 파란색 박스 헤더 -->
+    <header class="dashboard-header max-w-7xl mx-auto my-6">
+        <div class="header-left">
+            <h1 class="header-title">개선대책 유효성 점검 현황</h1>
+            <p class="header-subtitle">주기별 자주 검증 진척도 및 현장 품질 관리 실시간 모니터링</p>
+        </div>
+        <div class="header-right">
+            <a href="https://docs.google.com/spreadsheets/d/1CAAK11qrimDmHXvii7zRcUaWFTY6ENMT-LB7q5nrJz4/edit?gid=359651245#gid=359651245" 
+               target="_blank" class="btn-sheet">
+                📊 상세 원본 시트 열기
+            </a>
+            <div class="sync-badge">
+                <span class="sync-dot"></span>
+                <span id="sync-status">연동 중</span>
             </div>
         </div>
     </header>
 
     <!-- Main Container -->
-    <main class="max-w-7xl mx-auto px-4 py-5 space-y-5">
+    <main class="max-w-7xl mx-auto px-4 space-y-6">
 
-        <!-- KPI 현황판: 좌측 3개(위->아래) / 우측 3개(위->아래) 배치 -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- 현황판 6개 (좌측 3개 / 우측 3개 수직 배치, 글자 크기 50% 확대) -->
+        <div class="kpi-grid">
             
-            <!-- 좌측 컬럼: 전체 관리 항목 / 전체 점검 완료율 / 대상 업체 수 -->
-            <div class="flex flex-col space-y-3">
+            <!-- 좌측 컬럼 -->
+            <div class="flex flex-col space-y-5">
                 <!-- 1. 전체 관리 항목 -->
-                <div class="bg-white px-5 py-4 rounded-xl shadow-sm border border-slate-200/80 flex items-center justify-between">
-                    <div class="flex items-center space-x-3.5">
-                        <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-lg text-lg font-bold shrink-0">📋</div>
-                        <div>
-                            <p class="text-xs font-bold text-slate-500 whitespace-nowrap">전체 관리 항목</p>
-                            <p id="kpi-total-sub" class="text-[11px] text-slate-400 mt-0.5 whitespace-nowrap">총 점검 주기 0회</p>
+                <div class="kpi-card">
+                    <div class="kpi-left">
+                        <div class="kpi-icon-box bg-slate-100">📋</div>
+                        <div class="kpi-text-group">
+                            <h3 class="kpi-title text-slate-800">전체 관리 항목</h3>
+                            <p class="kpi-desc" id="kpi-total-sub">총 점검 주기 0회</p>
                         </div>
                     </div>
-                    <h3 id="kpi-total" class="text-2xl font-bold text-slate-900 whitespace-nowrap">0 건</h3>
+                    <div class="kpi-value text-slate-900" id="kpi-total">0 건</div>
                 </div>
 
                 <!-- 2. 전체 점검 완료율 -->
-                <div class="bg-white px-5 py-4 rounded-xl shadow-sm border border-slate-200/80 flex items-center justify-between">
-                    <div class="flex items-center space-x-3.5">
-                        <div class="p-2.5 bg-blue-50 text-blue-600 rounded-lg text-lg font-bold shrink-0">📈</div>
-                        <div>
-                            <p class="text-xs font-bold text-slate-500 whitespace-nowrap">전체 점검 완료율</p>
-                            <p id="kpi-rate-sub" class="text-[11px] text-slate-400 mt-0.5 whitespace-nowrap">0 / 0 주기 완료</p>
+                <div class="kpi-card">
+                    <div class="kpi-left">
+                        <div class="kpi-icon-box bg-blue-50">📈</div>
+                        <div class="kpi-text-group">
+                            <h3 class="kpi-title text-slate-800">전체 점검 완료율</h3>
+                            <p class="kpi-desc" id="kpi-rate-sub">0 / 0 주기 완료</p>
                         </div>
                     </div>
-                    <h3 id="kpi-rate" class="text-2xl font-bold text-indigo-600 whitespace-nowrap">0%</h3>
+                    <div class="kpi-value text-indigo-600" id="kpi-rate">0%</div>
                 </div>
 
                 <!-- 3. 대상 업체 수 -->
-                <div class="bg-white px-5 py-4 rounded-xl shadow-sm border border-slate-200/80 flex items-center justify-between">
-                    <div class="flex items-center space-x-3.5">
-                        <div class="p-2.5 bg-slate-100 text-slate-700 rounded-lg text-lg font-bold shrink-0">🏢</div>
-                        <div>
-                            <p class="text-xs font-bold text-slate-500 whitespace-nowrap">대상 업체 수</p>
-                            <p id="kpi-partners-sub" class="text-[11px] text-slate-400 mt-0.5 whitespace-nowrap">참여 협력사 현황</p>
+                <div class="kpi-card">
+                    <div class="kpi-left">
+                        <div class="kpi-icon-box bg-slate-100">🏢</div>
+                        <div class="kpi-text-group">
+                            <h3 class="kpi-title text-slate-800">대상 업체 수</h3>
+                            <p class="kpi-desc" id="kpi-partners-sub">참여 협력사 현황</p>
                         </div>
                     </div>
-                    <h3 id="kpi-partners" class="text-2xl font-bold text-slate-800 whitespace-nowrap">0 개사</h3>
+                    <div class="kpi-value text-slate-800" id="kpi-partners">0 개사</div>
                 </div>
             </div>
 
-            <!-- 우측 컬럼: 정상 / 지연 / 경과 -->
-            <div class="flex flex-col space-y-3">
-                <!-- 1. 정상 (초록색) -->
-                <div class="bg-white px-5 py-4 rounded-xl shadow-sm border border-emerald-200 flex items-center justify-between">
-                    <div class="flex items-center space-x-3.5">
-                        <div class="p-2.5 bg-emerald-50 text-emerald-600 rounded-lg text-lg font-bold shrink-0">✅</div>
-                        <div>
-                            <div class="flex items-center space-x-1.5">
-                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
-                                <p class="text-xs font-bold text-emerald-700 whitespace-nowrap">정상 (기준일 대비 2일 이내)</p>
-                            </div>
-                            <p id="kpi-normal-sub" class="text-[11px] text-slate-400 mt-0.5 whitespace-nowrap">전 주기 정상 품목 0건</p>
+            <!-- 우측 컬럼 -->
+            <div class="flex flex-col space-y-5">
+                <!-- 4. 정상 (초록색) -->
+                <div class="kpi-card border-emerald-200">
+                    <div class="kpi-left">
+                        <div class="kpi-icon-box bg-emerald-50 text-emerald-600">✅</div>
+                        <div class="kpi-text-group">
+                            <h3 class="kpi-title text-emerald-800">
+                                <span class="status-dot" style="background-color: #10b981;"></span>
+                                정상 (기준일 대비 2일 이내)
+                            </h3>
+                            <p class="kpi-desc" id="kpi-normal-sub">전 주기 정상 품목 0건</p>
                         </div>
                     </div>
-                    <h3 id="kpi-normal" class="text-2xl font-bold text-emerald-600 whitespace-nowrap">0 건</h3>
+                    <div class="kpi-value text-emerald-600" id="kpi-normal">0 건</div>
                 </div>
 
-                <!-- 2. 지연 (주황색) -->
-                <div class="bg-white px-5 py-4 rounded-xl shadow-sm border border-amber-200 flex items-center justify-between">
-                    <div class="flex items-center space-x-3.5">
-                        <div class="p-2.5 bg-amber-50 text-amber-500 rounded-lg text-lg font-bold shrink-0">⚠️</div>
-                        <div>
-                            <div class="flex items-center space-x-1.5">
-                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0"></span>
-                                <p class="text-xs font-bold text-amber-700 whitespace-nowrap">지연 (기준일 대비 3~5일 이내)</p>
-                            </div>
-                            <p id="kpi-delayed-sub" class="text-[11px] text-slate-400 mt-0.5 whitespace-nowrap">지연 발생 품목 0건</p>
+                <!-- 5. 지연 (주황색) -->
+                <div class="kpi-card border-amber-200">
+                    <div class="kpi-left">
+                        <div class="kpi-icon-box bg-amber-50 text-amber-500">⚠️</div>
+                        <div class="kpi-text-group">
+                            <h3 class="kpi-title text-amber-800">
+                                <span class="status-dot" style="background-color: #d97706;"></span>
+                                지연 (기준일 대비 3~5일 이내)
+                            </h3>
+                            <p class="kpi-desc" id="kpi-delayed-sub">지연 발생 품목 0건</p>
                         </div>
                     </div>
-                    <h3 id="kpi-delayed" class="text-2xl font-bold text-amber-500 whitespace-nowrap">0 건</h3>
+                    <div class="kpi-value text-amber-500" id="kpi-delayed">0 건</div>
                 </div>
 
-                <!-- 3. 경과 (빨간색) -->
-                <div class="bg-white px-5 py-4 rounded-xl shadow-sm border border-rose-200 flex items-center justify-between">
-                    <div class="flex items-center space-x-3.5">
-                        <div class="p-2.5 bg-rose-50 text-rose-600 rounded-lg text-lg font-bold shrink-0">🚨</div>
-                        <div>
-                            <div class="flex items-center space-x-1.5">
-                                <span class="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0"></span>
-                                <p class="text-xs font-bold text-rose-700 whitespace-nowrap">경과 (기준일 대비 5일 초과)</p>
-                            </div>
-                            <p id="kpi-overdue-sub" class="text-[11px] text-slate-400 mt-0.5 whitespace-nowrap">경과 발생 품목 0건</p>
+                <!-- 6. 경과 (빨간색) -->
+                <div class="kpi-card border-rose-200">
+                    <div class="kpi-left">
+                        <div class="kpi-icon-box bg-rose-50 text-rose-600">🚨</div>
+                        <div class="kpi-text-group">
+                            <h3 class="kpi-title text-rose-800">
+                                <span class="status-dot" style="background-color: #e11d48;"></span>
+                                경과 (기준일 대비 5일 초과)
+                            </h3>
+                            <p class="kpi-desc" id="kpi-overdue-sub">경과 발생 품목 0건</p>
                         </div>
                     </div>
-                    <h3 id="kpi-overdue" class="text-2xl font-bold text-rose-600 whitespace-nowrap">0 건</h3>
+                    <div class="kpi-value text-rose-600" id="kpi-overdue">0 건</div>
                 </div>
             </div>
 
         </div>
 
         <!-- 업체별 요약 현황 카드 -->
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
             <h3 class="text-sm font-bold text-slate-800 mb-3">업체별(OSA) 점검 진행 및 지연 요약</h3>
             <div id="partner-summary" class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <!-- JS로 동적 생성 -->
@@ -137,12 +276,12 @@
 
         <!-- Detailed Table Section -->
         <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-            <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-3">
+            <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-3">
                 <div>
                     <h3 class="text-base font-bold text-slate-900">개선 대책 상세 진행 목록</h3>
-                    <p class="text-xs text-slate-400 mt-0.5">* 관리번호 형식: 업체명_년도_순번 | 색상 기준: 초록(정상, ≤2일), 주황(지연, 3~5일), 빨강(경과, &gt;5일)</p>
+                    <p class="text-xs text-slate-400 mt-0.5">* 색상 기준: 초록(정상, ≤2일), 주황(지연, 3~5일), 빨강(경과, &gt;5일)</p>
                 </div>
-                <!-- 관리번호 업체명 필터 셀렉트박스 -->
+                <!-- C열 업체명 기준 필터 셀렉트박스 -->
                 <div class="flex items-center space-x-2 shrink-0">
                     <label for="partner-filter" class="text-xs font-semibold text-slate-600 whitespace-nowrap">업체명 필터:</label>
                     <select id="partner-filter" onchange="filterTable()" class="px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-700 font-semibold">
@@ -180,7 +319,6 @@
         let allParsedData = [];
 
         window.addEventListener('DOMContentLoaded', () => {
-            // GitHub Pages README.md 자동 생성 타이틀(QQQ 등) 감지 및 자동 제거
             document.querySelectorAll('h1, p').forEach(el => {
                 if (el.textContent.trim() === 'QQQ' || el.textContent.includes('<!DOCTYPE')) {
                     el.style.display = 'none';
@@ -201,10 +339,10 @@
                 const csvText = await response.text();
                 parseCSVAndRender(csvText);
 
-                document.getElementById('sync-status').innerHTML = '<span class="w-2 h-2 mr-1.5 bg-emerald-500 rounded-full"></span> 연동 완료 (' + new Date().toLocaleTimeString() + ')';
+                document.getElementById('sync-status').textContent = '연동 완료 (' + new Date().toLocaleTimeString() + ')';
             } catch (error) {
                 console.error(error);
-                document.getElementById('sync-status').innerHTML = '<span class="w-2 h-2 mr-1.5 bg-rose-500 rounded-full"></span> 연동 실패';
+                document.getElementById('sync-status').textContent = '연동 실패';
             }
         }
 
@@ -215,6 +353,44 @@
                 return new Date(parseInt(match[1], 10), parseInt(match[2], 10) - 1, parseInt(match[3], 10));
             }
             return null;
+        }
+
+        function parseCSVToArray(str) {
+            let arr = [];
+            let row = [];
+            let inQuotes = false;
+            let c = '';
+            let val = '';
+
+            for (let i = 0; i < str.length; i++) {
+                c = str[i];
+                let nextC = str[i + 1];
+
+                if (c === '"') {
+                    if (inQuotes && nextC === '"') {
+                        val += '"';
+                        i++;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if (c === ',' && !inQuotes) {
+                    row.push(val.trim());
+                    val = '';
+                } else if ((c === '\r' || c === '\n') && !inQuotes) {
+                    if (c === '\r' && nextC === '\n') { i++; }
+                    row.push(val.trim());
+                    arr.push(row);
+                    row = [];
+                    val = '';
+                } else {
+                    val += c;
+                }
+            }
+            if (val !== '' || row.length > 0) {
+                row.push(val.trim());
+                arr.push(row);
+            }
+            return arr;
         }
 
         function parseCSVAndRender(csvText) {
@@ -255,24 +431,23 @@
                 if (row1 && row1[0] && row1[0].trim() !== '' && !row1[0].includes('점검') && !row1[0].includes('기준일')) {
                     const id = row1[0].trim();
 
-                    // 숨겨진 행 (L26_001, L26_002, L26_003) 제외
+                    // 숨겨진 행 제외
                     if (['L26_001', 'L26_002', 'L26_003'].includes(id)) {
                         i++;
                         continue;
                     }
 
                     const date = row1[1] || '';
-                    const osa = row1[2] || (id.includes('_') ? id.split('_')[0] : '기타');
+                    // C열(인덱스 2)의 값을 OSA 업체명으로 사용
+                    const osa = (row1[2] ? row1[2].trim() : '') || (id.includes('_') ? id.split('_')[0] : '기타');
                     const client = row1[3] || '';
                     const productName = row1[4] || '';
                     const defect = row1[5] || '';
-                    const idPrefix = id.includes('_') ? id.split('_')[0] : osa;
 
                     totalItems++;
 
                     if (!partnersStats[osa]) {
                         partnersStats[osa] = {
-                            prefix: idPrefix,
                             items: 0,
                             doneSteps: 0,
                             normal: 0,
@@ -368,7 +543,7 @@
                     }
 
                     parsedItems.push({
-                        id, idPrefix, date, osa, client, productName, defect, gaugeHtml
+                        id, date, osa, client, productName, defect, gaugeHtml
                     });
                 }
                 i++;
@@ -380,28 +555,26 @@
             const completionRate = totalPossibleSteps > 0 ? Math.round((totalDoneSteps / totalPossibleSteps) * 100) : 0;
             const partnerNames = Object.keys(partnersStats);
 
-            // 좌측 3개 KPI 업데이트
-            document.getElementById('kpi-total').innerText = totalItems + " 건";
-            document.getElementById('kpi-total-sub').innerText = `총 점검 주기 ${totalPossibleSteps}회`;
+            document.getElementById('kpi-total').textContent = totalItems + " 건";
+            document.getElementById('kpi-total-sub').textContent = `총 점검 주기 ${totalPossibleSteps}회`;
 
-            document.getElementById('kpi-rate').innerText = completionRate + "%";
-            document.getElementById('kpi-rate-sub').innerText = `${totalDoneSteps} / ${totalPossibleSteps} 주기 완료`;
+            document.getElementById('kpi-rate').textContent = completionRate + "%";
+            document.getElementById('kpi-rate-sub').textContent = `${totalDoneSteps} / ${totalPossibleSteps} 주기 완료`;
 
-            document.getElementById('kpi-partners').innerText = partnerNames.length + " 개사";
-            document.getElementById('kpi-partners-sub').innerText = partnerNames.join(', ') || '참여 협력사 현황';
+            document.getElementById('kpi-partners').textContent = partnerNames.length + " 개사";
+            document.getElementById('kpi-partners-sub').textContent = partnerNames.join(', ') || '참여 협력사 현황';
 
-            // 우측 3개 KPI (정상 / 지연 / 경과) 업데이트
-            document.getElementById('kpi-normal').innerText = normalSteps + " 건";
-            document.getElementById('kpi-normal-sub').innerText = `전 주기 정상 품목 ${normalItemsCount}건`;
+            document.getElementById('kpi-normal').textContent = normalSteps + " 건";
+            document.getElementById('kpi-normal-sub').textContent = `전 주기 정상 품목 ${normalItemsCount}건`;
 
-            document.getElementById('kpi-delayed').innerText = delayedSteps + " 건";
-            document.getElementById('kpi-delayed-sub').innerText = `지연 발생 품목 ${delayedItemsCount}건`;
+            document.getElementById('kpi-delayed').textContent = delayedSteps + " 건";
+            document.getElementById('kpi-delayed-sub').textContent = `지연 발생 품목 ${delayedItemsCount}건`;
 
-            document.getElementById('kpi-overdue').innerText = overdueSteps + " 건";
-            document.getElementById('kpi-overdue-sub').innerText = `경과 발생 품목 ${overdueItemsCount}건`;
+            document.getElementById('kpi-overdue').textContent = overdueSteps + " 건";
+            document.getElementById('kpi-overdue-sub').textContent = `경과 발생 품목 ${overdueItemsCount}건`;
 
             renderPartnerSummary(partnersStats);
-            updateFilterOptions(partnersStats);
+            updateFilterOptions(partnerNames);
             filterTable();
         }
 
@@ -448,17 +621,15 @@
             container.innerHTML = html || `<div class="text-xs text-slate-400">집계된 업체 데이터가 없습니다.</div>`;
         }
 
-        function updateFilterOptions(partnersStats) {
+        function updateFilterOptions(partnerNames) {
             const selectEl = document.getElementById('partner-filter');
             const currentVal = selectEl.value;
             let optionsHtml = '<option value="ALL">전체 업체 보기</option>';
-            Object.keys(partnersStats).forEach(osa => {
-                const prefix = partnersStats[osa].prefix;
-                const label = prefix !== osa ? `${osa} (${prefix}_*)` : osa;
-                optionsHtml += `<option value="${osa}">${label}</option>`;
+            partnerNames.forEach(name => {
+                optionsHtml += `<option value="${name}">${name}</option>`;
             });
             selectEl.innerHTML = optionsHtml;
-            if (Object.keys(partnersStats).includes(currentVal)) {
+            if (partnerNames.includes(currentVal)) {
                 selectEl.value = currentVal;
             } else {
                 selectEl.value = 'ALL';
@@ -470,7 +641,7 @@
             if (selectedPartner === 'ALL') {
                 renderTable(allParsedData);
             } else {
-                const filtered = allParsedData.filter(item => item.osa === selectedPartner || item.idPrefix === selectedPartner);
+                const filtered = allParsedData.filter(item => item.osa === selectedPartner);
                 renderTable(filtered);
             }
         }
@@ -499,44 +670,6 @@
             });
 
             document.getElementById('table-body').innerHTML = tableHtml || `<tr><td colspan="6" class="p-6 text-center text-slate-400">조건에 해당하는 데이터가 없습니다.</td></tr>`;
-        }
-
-        function parseCSVToArray(str) {
-            let arr = [];
-            let row = [];
-            let inQuotes = false;
-            let c = '';
-            let val = '';
-
-            for (let i = 0; i < str.length; i++) {
-                c = str[i];
-                let nextC = str[i + 1];
-
-                if (c === '"') {
-                    if (inQuotes && nextC === '"') {
-                        val += '"';
-                        i++;
-                    } else {
-                        inQuotes = !inQuotes;
-                    }
-                } else if (c === ',' && !inQuotes) {
-                    row.push(val.trim());
-                    val = '';
-                } else if ((c === '\r' || c === '\n') && !inQuotes) {
-                    if (c === '\r' && nextC === '\n') { i++; }
-                    row.push(val.trim());
-                    arr.push(row);
-                    row = [];
-                    val = '';
-                } else {
-                    val += c;
-                }
-            }
-            if (val !== '' || row.length > 0) {
-                row.push(val.trim());
-                arr.push(row);
-            }
-            return arr;
         }
     </script>
 </body>
