@@ -2,44 +2,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>개선대책 유효성 점검 대시보드</title>
+    <title>개선대책 유효성 점검 현황</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body .markdown-body h1, body > h1:first-child { display: none !important; }
-        
         /* 상단 파란색 박스 헤더 스타일 */
         .dashboard-header {
             background-color: #262272;
             color: #ffffff;
-            padding: 24px 36px;
+            padding: 20px 32px;
             border-radius: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 24px;
-            margin-bottom: 28px;
+            margin-bottom: 24px;
             box-sizing: border-box;
         }
         .header-left {
             display: flex;
-            align-items: baseline;
-            gap: 20px;
+            align-items: center;
             flex-wrap: nowrap;
             overflow: hidden;
         }
-        .header-title {
-            font-size: 28px;
+        /* 기존 부제목(15px) 대비 2배 확대(30px) 및 흰색 적용 */
+        .header-main-text {
+            font-size: 30px;
             font-weight: 800;
+            color: #ffffff;
             margin: 0;
             white-space: nowrap;
             letter-spacing: -0.5px;
-        }
-        .header-subtitle {
-            font-size: 15px;
-            color: #c7d2fe;
-            margin: 0;
-            white-space: nowrap;
         }
         .header-right {
             display: flex;
@@ -51,9 +44,9 @@
             background-color: rgba(255, 255, 255, 0.12);
             color: #ffffff;
             border: 1px solid rgba(255, 255, 255, 0.4);
-            padding: 10px 18px;
+            padding: 9px 16px;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             text-decoration: none;
             display: inline-flex;
@@ -69,9 +62,9 @@
         .sync-badge {
             background-color: #dcfce7;
             color: #15803d;
-            padding: 10px 18px;
+            padding: 9px 16px;
             border-radius: 9999px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
             display: inline-flex;
             align-items: center;
@@ -86,18 +79,18 @@
             display: inline-block;
         }
 
-        /* 현황판 6개 폰트 50% 확대 스타일 */
+        /* 현황판 6개 스타일 (기존 대비 30% 축소 적용) */
         .kpi-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
+            gap: 16px;
+            margin-bottom: 24px;
         }
         .kpi-card {
             background: #ffffff;
             border: 1px solid #e5e7eb;
-            border-radius: 16px;
-            padding: 28px 32px;
+            border-radius: 14px;
+            padding: 20px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -106,46 +99,49 @@
         .kpi-left {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 14px;
         }
         .kpi-icon-box {
-            width: 66px;
-            height: 66px;
-            border-radius: 14px;
+            width: 46px;
+            height: 46px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 32px;
+            font-size: 22px;
             flex-shrink: 0;
         }
         .kpi-text-group {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 4px;
         }
+        /* 21px -> 15px (약 30% 축소) */
         .kpi-title {
-            font-size: 21px;
+            font-size: 15px;
             font-weight: 700;
             margin: 0;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             white-space: nowrap;
         }
+        /* 18px -> 13px (약 30% 축소) */
         .kpi-desc {
-            font-size: 18px;
+            font-size: 13px;
             color: #6b7280;
             margin: 0;
             white-space: nowrap;
         }
+        /* 36px -> 25px (약 30% 축소) */
         .kpi-value {
-            font-size: 36px;
+            font-size: 25px;
             font-weight: 800;
             white-space: nowrap;
         }
         .status-dot {
-            width: 12px;
-            height: 12px;
+            width: 9px;
+            height: 9px;
             border-radius: 50%;
             display: inline-block;
         }
@@ -154,10 +150,9 @@
 <body class="bg-slate-50 text-slate-800 min-h-screen">
 
     <!-- 상단 파란색 박스 헤더 -->
-    <header class="dashboard-header max-w-7xl mx-auto my-6">
+    <header class="dashboard-header max-w-7xl mx-auto my-5">
         <div class="header-left">
-            <h1 class="header-title">개선대책 유효성 점검 현황</h1>
-            <p class="header-subtitle">주기별 자주 검증 진척도 및 현장 품질 관리 실시간 모니터링</p>
+            <div class="header-main-text">개선대책 유효성 점검 현황</div>
         </div>
         <div class="header-right">
             <a href="https://docs.google.com/spreadsheets/d/1CAAK11qrimDmHXvii7zRcUaWFTY6ENMT-LB7q5nrJz4/edit?gid=359651245#gid=359651245" 
@@ -172,19 +167,19 @@
     </header>
 
     <!-- Main Container -->
-    <main class="max-w-7xl mx-auto px-4 space-y-6">
+    <main class="max-w-7xl mx-auto px-4 space-y-5">
 
-        <!-- 현황판 6개 (좌측 3개 / 우측 3개 수직 배치, 글자 크기 50% 확대) -->
+        <!-- 현황판 6개 (좌측 3개 / 우측 3개 수직 배치, 글자 크기 30% 축소) -->
         <div class="kpi-grid">
             
             <!-- 좌측 컬럼 -->
-            <div class="flex flex-col space-y-5">
+            <div class="flex flex-col space-y-4">
                 <!-- 1. 전체 관리 항목 -->
                 <div class="kpi-card">
                     <div class="kpi-left">
                         <div class="kpi-icon-box bg-slate-100">📋</div>
                         <div class="kpi-text-group">
-                            <h3 class="kpi-title text-slate-800">전체 관리 항목</h3>
+                            <div class="kpi-title text-slate-800">전체 관리 항목</div>
                             <p class="kpi-desc" id="kpi-total-sub">총 점검 주기 0회</p>
                         </div>
                     </div>
@@ -196,7 +191,7 @@
                     <div class="kpi-left">
                         <div class="kpi-icon-box bg-blue-50">📈</div>
                         <div class="kpi-text-group">
-                            <h3 class="kpi-title text-slate-800">전체 점검 완료율</h3>
+                            <div class="kpi-title text-slate-800">전체 점검 완료율</div>
                             <p class="kpi-desc" id="kpi-rate-sub">0 / 0 주기 완료</p>
                         </div>
                     </div>
@@ -208,7 +203,7 @@
                     <div class="kpi-left">
                         <div class="kpi-icon-box bg-slate-100">🏢</div>
                         <div class="kpi-text-group">
-                            <h3 class="kpi-title text-slate-800">대상 업체 수</h3>
+                            <div class="kpi-title text-slate-800">대상 업체 수</div>
                             <p class="kpi-desc" id="kpi-partners-sub">참여 협력사 현황</p>
                         </div>
                     </div>
@@ -217,16 +212,16 @@
             </div>
 
             <!-- 우측 컬럼 -->
-            <div class="flex flex-col space-y-5">
+            <div class="flex flex-col space-y-4">
                 <!-- 4. 정상 (초록색) -->
                 <div class="kpi-card border-emerald-200">
                     <div class="kpi-left">
                         <div class="kpi-icon-box bg-emerald-50 text-emerald-600">✅</div>
                         <div class="kpi-text-group">
-                            <h3 class="kpi-title text-emerald-800">
+                            <div class="kpi-title text-emerald-800">
                                 <span class="status-dot" style="background-color: #10b981;"></span>
                                 정상 (기준일 대비 2일 이내)
-                            </h3>
+                            </div>
                             <p class="kpi-desc" id="kpi-normal-sub">전 주기 정상 품목 0건</p>
                         </div>
                     </div>
@@ -238,10 +233,10 @@
                     <div class="kpi-left">
                         <div class="kpi-icon-box bg-amber-50 text-amber-500">⚠️</div>
                         <div class="kpi-text-group">
-                            <h3 class="kpi-title text-amber-800">
+                            <div class="kpi-title text-amber-800">
                                 <span class="status-dot" style="background-color: #d97706;"></span>
                                 지연 (기준일 대비 3~5일 이내)
-                            </h3>
+                            </div>
                             <p class="kpi-desc" id="kpi-delayed-sub">지연 발생 품목 0건</p>
                         </div>
                     </div>
@@ -253,10 +248,10 @@
                     <div class="kpi-left">
                         <div class="kpi-icon-box bg-rose-50 text-rose-600">🚨</div>
                         <div class="kpi-text-group">
-                            <h3 class="kpi-title text-rose-800">
+                            <div class="kpi-title text-rose-800">
                                 <span class="status-dot" style="background-color: #e11d48;"></span>
                                 경과 (기준일 대비 5일 초과)
-                            </h3>
+                            </div>
                             <p class="kpi-desc" id="kpi-overdue-sub">경과 발생 품목 0건</p>
                         </div>
                     </div>
@@ -319,6 +314,7 @@
         let allParsedData = [];
 
         window.addEventListener('DOMContentLoaded', () => {
+            // GitHub Pages 마크다운 잔여 텍스트(QQQ 등)만 선택적으로 숨김 처리
             document.querySelectorAll('h1, p').forEach(el => {
                 if (el.textContent.trim() === 'QQQ' || el.textContent.includes('<!DOCTYPE')) {
                     el.style.display = 'none';
