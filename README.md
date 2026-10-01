@@ -2,26 +2,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OSA 개선 대책 유효성 점검 대시보드</title>
+    <title>개선대책 유효성 점검 대시보드</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* GitHub Pages 마크다운 기본 스타일 간섭 방지 */
+        body .markdown-body h1, body > h1:first-child { display: none !important; }
+        header h1 { border-bottom: none !important; margin: 0 !important; padding: 0 !important; }
+    </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen">
 
-    <!-- Header (슬림한 상하 폭 적용) -->
+    <!-- Header (줄바꿈 방지 및 슬림 레이아웃) -->
     <header class="bg-indigo-900 text-white shadow-md">
-        <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-col md:flex-row justify-between items-center">
-            <div class="flex items-baseline space-x-3">
-                <h1 class="text-lg font-bold tracking-tight">OSA 개선 대책 유효성 점검 대시보드</h1>
-                <p class="text-indigo-200 text-xs hidden sm:inline">주기별 자주 검증 진척도 및 현장 품질 관리 실시간 모니터링</p>
-            </div>
-            <div class="mt-2 md:mt-0 flex items-center space-x-2.5">
+        <div class="max-w-7xl mx-auto px-5 py-3 flex flex-row justify-between items-center gap-4">
+            <h1 class="text-base sm:text-lg font-bold tracking-tight whitespace-nowrap text-white">
+                개선대책 유효성 점검 대시보드
+            </h1>
+            <div class="flex items-center space-x-2.5 shrink-0">
                 <a href="https://docs.google.com/spreadsheets/d/1CAAK11qrimDmHXvii7zRcUaWFTY6ENMT-LB7q5nrJz4/edit?gid=359651245#gid=359651245" 
                    target="_blank" 
-                   class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-indigo-800 hover:bg-indigo-700 text-indigo-100 transition-colors border border-indigo-700 shadow-sm">
+                   class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-800 hover:bg-indigo-700 text-indigo-100 transition-colors border border-indigo-700 shadow-sm whitespace-nowrap">
                     📊 상세 원본 시트 열기
                 </a>
-                <span id="sync-status" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                <span id="sync-status" class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 whitespace-nowrap">
                     <span class="w-2 h-2 mr-1.5 bg-emerald-500 rounded-full animate-pulse"></span> 연동 중
                 </span>
             </div>
@@ -31,66 +35,96 @@
     <!-- Main Container -->
     <main class="max-w-7xl mx-auto px-4 py-5 space-y-5">
 
-        <!-- KPI Cards Grid (정상 / 지연 / 경과 3단계 반영 및 협력사 수 제외) -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            <!-- 전체 관리 항목 -->
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-semibold text-slate-500">전체 관리 항목</p>
-                    <h3 id="kpi-total" class="text-2xl font-bold text-slate-900 mt-1">0 건</h3>
-                    <p id="kpi-total-sub" class="text-[11px] text-slate-400 mt-0.5">총 점검 주기 0회</p>
-                </div>
-                <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-lg text-base font-bold">📋</div>
-            </div>
-
-            <!-- 전체 점검 완료율 -->
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-semibold text-slate-500">전체 점검 완료율</p>
-                    <h3 id="kpi-rate" class="text-2xl font-bold text-indigo-600 mt-1">0%</h3>
-                    <p id="kpi-rate-sub" class="text-[11px] text-slate-400 mt-0.5">0 / 0 주기 완료</p>
-                </div>
-                <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-lg text-base font-bold">📈</div>
-            </div>
-
-            <!-- 정상 (초록색) -->
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-emerald-200 flex items-center justify-between">
-                <div>
-                    <div class="flex items-center space-x-1.5">
-                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                        <p class="text-xs font-bold text-emerald-700">정상 (2일 이내)</p>
+        <!-- KPI 현황판: 좌측 3개(위->아래) / 우측 3개(위->아래) 배치 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <!-- 좌측 컬럼: 전체 관리 항목 / 전체 점검 완료율 / 대상 업체 수 -->
+            <div class="flex flex-col space-y-3">
+                <!-- 1. 전체 관리 항목 -->
+                <div class="bg-white px-5 py-4 rounded-xl shadow-sm border border-slate-200/80 flex items-center justify-between">
+                    <div class="flex items-center space-x-3.5">
+                        <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-lg text-lg font-bold shrink-0">📋</div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-500 whitespace-nowrap">전체 관리 항목</p>
+                            <p id="kpi-total-sub" class="text-[11px] text-slate-400 mt-0.5 whitespace-nowrap">총 점검 주기 0회</p>
+                        </div>
                     </div>
-                    <h3 id="kpi-normal" class="text-2xl font-bold text-emerald-600 mt-1">0 건</h3>
-                    <p id="kpi-normal-sub" class="text-[11px] text-slate-400 mt-0.5">품목 기준 0건</p>
+                    <h3 id="kpi-total" class="text-2xl font-bold text-slate-900 whitespace-nowrap">0 건</h3>
                 </div>
-                <div class="p-2.5 bg-emerald-50 text-emerald-600 rounded-lg text-base font-bold">✅</div>
+
+                <!-- 2. 전체 점검 완료율 -->
+                <div class="bg-white px-5 py-4 rounded-xl shadow-sm border border-slate-200/80 flex items-center justify-between">
+                    <div class="flex items-center space-x-3.5">
+                        <div class="p-2.5 bg-blue-50 text-blue-600 rounded-lg text-lg font-bold shrink-0">📈</div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-500 whitespace-nowrap">전체 점검 완료율</p>
+                            <p id="kpi-rate-sub" class="text-[11px] text-slate-400 mt-0.5 whitespace-nowrap">0 / 0 주기 완료</p>
+                        </div>
+                    </div>
+                    <h3 id="kpi-rate" class="text-2xl font-bold text-indigo-600 whitespace-nowrap">0%</h3>
+                </div>
+
+                <!-- 3. 대상 업체 수 -->
+                <div class="bg-white px-5 py-4 rounded-xl shadow-sm border border-slate-200/80 flex items-center justify-between">
+                    <div class="flex items-center space-x-3.5">
+                        <div class="p-2.5 bg-slate-100 text-slate-700 rounded-lg text-lg font-bold shrink-0">🏢</div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-500 whitespace-nowrap">대상 업체 수</p>
+                            <p id="kpi-partners-sub" class="text-[11px] text-slate-400 mt-0.5 whitespace-nowrap">참여 협력사 현황</p>
+                        </div>
+                    </div>
+                    <h3 id="kpi-partners" class="text-2xl font-bold text-slate-800 whitespace-nowrap">0 개사</h3>
+                </div>
             </div>
 
-            <!-- 지연 (주황색) -->
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-amber-200 flex items-center justify-between">
-                <div>
-                    <div class="flex items-center space-x-1.5">
-                        <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                        <p class="text-xs font-bold text-amber-700">지연 (3~5일)</p>
+            <!-- 우측 컬럼: 정상 / 지연 / 경과 -->
+            <div class="flex flex-col space-y-3">
+                <!-- 1. 정상 (초록색) -->
+                <div class="bg-white px-5 py-4 rounded-xl shadow-sm border border-emerald-200 flex items-center justify-between">
+                    <div class="flex items-center space-x-3.5">
+                        <div class="p-2.5 bg-emerald-50 text-emerald-600 rounded-lg text-lg font-bold shrink-0">✅</div>
+                        <div>
+                            <div class="flex items-center space-x-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
+                                <p class="text-xs font-bold text-emerald-700 whitespace-nowrap">정상 (기준일 대비 2일 이내)</p>
+                            </div>
+                            <p id="kpi-normal-sub" class="text-[11px] text-slate-400 mt-0.5 whitespace-nowrap">전 주기 정상 품목 0건</p>
+                        </div>
                     </div>
-                    <h3 id="kpi-delayed" class="text-2xl font-bold text-amber-500 mt-1">0 건</h3>
-                    <p id="kpi-delayed-sub" class="text-[11px] text-slate-400 mt-0.5">품목 기준 0건</p>
+                    <h3 id="kpi-normal" class="text-2xl font-bold text-emerald-600 whitespace-nowrap">0 건</h3>
                 </div>
-                <div class="p-2.5 bg-amber-50 text-amber-500 rounded-lg text-base font-bold">⚠️</div>
+
+                <!-- 2. 지연 (주황색) -->
+                <div class="bg-white px-5 py-4 rounded-xl shadow-sm border border-amber-200 flex items-center justify-between">
+                    <div class="flex items-center space-x-3.5">
+                        <div class="p-2.5 bg-amber-50 text-amber-500 rounded-lg text-lg font-bold shrink-0">⚠️</div>
+                        <div>
+                            <div class="flex items-center space-x-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0"></span>
+                                <p class="text-xs font-bold text-amber-700 whitespace-nowrap">지연 (기준일 대비 3~5일 이내)</p>
+                            </div>
+                            <p id="kpi-delayed-sub" class="text-[11px] text-slate-400 mt-0.5 whitespace-nowrap">지연 발생 품목 0건</p>
+                        </div>
+                    </div>
+                    <h3 id="kpi-delayed" class="text-2xl font-bold text-amber-500 whitespace-nowrap">0 건</h3>
+                </div>
+
+                <!-- 3. 경과 (빨간색) -->
+                <div class="bg-white px-5 py-4 rounded-xl shadow-sm border border-rose-200 flex items-center justify-between">
+                    <div class="flex items-center space-x-3.5">
+                        <div class="p-2.5 bg-rose-50 text-rose-600 rounded-lg text-lg font-bold shrink-0">🚨</div>
+                        <div>
+                            <div class="flex items-center space-x-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0"></span>
+                                <p class="text-xs font-bold text-rose-700 whitespace-nowrap">경과 (기준일 대비 5일 초과)</p>
+                            </div>
+                            <p id="kpi-overdue-sub" class="text-[11px] text-slate-400 mt-0.5 whitespace-nowrap">경과 발생 품목 0건</p>
+                        </div>
+                    </div>
+                    <h3 id="kpi-overdue" class="text-2xl font-bold text-rose-600 whitespace-nowrap">0 건</h3>
+                </div>
             </div>
 
-            <!-- 경과 (빨간색) -->
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-rose-200 flex items-center justify-between col-span-2 sm:col-span-1">
-                <div>
-                    <div class="flex items-center space-x-1.5">
-                        <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
-                        <p class="text-xs font-bold text-rose-700">경과 (5일 초과)</p>
-                    </div>
-                    <h3 id="kpi-overdue" class="text-2xl font-bold text-rose-600 mt-1">0 건</h3>
-                    <p id="kpi-overdue-sub" class="text-[11px] text-slate-400 mt-0.5">품목 기준 0건</p>
-                </div>
-                <div class="p-2.5 bg-rose-50 text-rose-600 rounded-lg text-base font-bold">🚨</div>
-            </div>
         </div>
 
         <!-- 업체별 요약 현황 카드 -->
@@ -109,8 +143,8 @@
                     <p class="text-xs text-slate-400 mt-0.5">* 관리번호 형식: 업체명_년도_순번 | 색상 기준: 초록(정상, ≤2일), 주황(지연, 3~5일), 빨강(경과, &gt;5일)</p>
                 </div>
                 <!-- 관리번호 업체명 필터 셀렉트박스 -->
-                <div class="flex items-center space-x-2">
-                    <label for="partner-filter" class="text-xs font-semibold text-slate-600">업체명 필터:</label>
+                <div class="flex items-center space-x-2 shrink-0">
+                    <label for="partner-filter" class="text-xs font-semibold text-slate-600 whitespace-nowrap">업체명 필터:</label>
                     <select id="partner-filter" onchange="filterTable()" class="px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-700 font-semibold">
                         <option value="ALL">전체 업체 보기</option>
                     </select>
@@ -120,12 +154,12 @@
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-slate-50 text-slate-500 text-xs uppercase font-semibold border-b border-slate-200">
-                            <th class="p-3.5 w-36">관리번호</th>
-                            <th class="p-3.5 w-28">발생일</th>
-                            <th class="p-3.5 w-28">OSA</th>
-                            <th class="p-3.5 w-32">고객사</th>
-                            <th class="p-3.5 w-44">품명</th>
-                            <th class="p-3.5">불량내용</th>
+                            <th class="p-3.5 w-36 whitespace-nowrap">관리번호</th>
+                            <th class="p-3.5 w-28 whitespace-nowrap">발생일</th>
+                            <th class="p-3.5 w-28 whitespace-nowrap">OSA</th>
+                            <th class="p-3.5 w-32 whitespace-nowrap">고객사</th>
+                            <th class="p-3.5 w-44 whitespace-nowrap">품명</th>
+                            <th class="p-3.5 whitespace-nowrap">불량내용</th>
                         </tr>
                     </thead>
                     <tbody id="table-body" class="divide-y divide-slate-100 text-sm">
@@ -146,6 +180,13 @@
         let allParsedData = [];
 
         window.addEventListener('DOMContentLoaded', () => {
+            // GitHub Pages README.md 자동 생성 타이틀(QQQ 등) 감지 및 자동 제거
+            document.querySelectorAll('h1, p').forEach(el => {
+                if (el.textContent.trim() === 'QQQ' || el.textContent.includes('<!DOCTYPE')) {
+                    el.style.display = 'none';
+                }
+            });
+
             fetchAndRenderData();
             setInterval(fetchAndRenderData, 60000);
         });
@@ -167,7 +208,6 @@
             }
         }
 
-        // 날짜 문자열(2026. 8. 30 또는 2026-09-03 17:28)을 자정 기준 Date 객체로 정확히 변환
         function parseDate(str) {
             if (!str) return null;
             const match = str.match(/(\d{4})[\.\-\/\s]+(\d{1,2})[\.\-\/\s]+(\d{1,2})/);
@@ -215,7 +255,7 @@
                 if (row1 && row1[0] && row1[0].trim() !== '' && !row1[0].includes('점검') && !row1[0].includes('기준일')) {
                     const id = row1[0].trim();
 
-                    // 숨겨진 행 (L26_001, L26_002, L26_003) 완벽 제외
+                    // 숨겨진 행 (L26_001, L26_002, L26_003) 제외
                     if (['L26_001', 'L26_002', 'L26_003'].includes(id)) {
                         i++;
                         continue;
@@ -226,8 +266,6 @@
                     const client = row1[3] || '';
                     const productName = row1[4] || '';
                     const defect = row1[5] || '';
-
-                    // 관리번호에서 업체명 프리픽스 추출 (예: 한림_26_001 -> 한림)
                     const idPrefix = id.includes('_') ? id.split('_')[0] : osa;
 
                     totalItems++;
@@ -244,7 +282,6 @@
                     }
                     partnersStats[osa].items++;
 
-                    // ★ 핵심 수정: 점검 기준일은 현재 행(row1)을 포함해 탐색하고, 점검 실시일은 아래 행에서 탐색
                     let rowStandard = row1;
                     let rowExecution = [];
                     
@@ -263,7 +300,6 @@
                         }
                     }
 
-                    // '점검 기준일' 또는 '점검 실시일' 라벨이 위치한 컬럼 인덱스를 찾아 그 다음 열부터 8개 주기를 읽음
                     let labelColIdx = rowStandard.findIndex(cell => cell && cell.includes('점검 기준일'));
                     if (labelColIdx === -1 && rowExecution.length > 0) {
                         labelColIdx = rowExecution.findIndex(cell => cell && cell.includes('점검 실시일'));
@@ -292,7 +328,6 @@
                             if (dtExec && dtStd) {
                                 let diffDays = Math.round((dtExec.getTime() - dtStd.getTime()) / (1000 * 60 * 60 * 24));
 
-                                // 5일 초과: 경과(빨간색), 3일~5일 이내: 지연(주황색), 2일 이내(조기포함): 정상(초록색)
                                 if (diffDays > 5) {
                                     badgeColor = 'bg-rose-500 text-white ring-2 ring-rose-200';
                                     statusText = `경과 (+${diffDays}일 지연)`;
@@ -316,10 +351,10 @@
                             }
 
                             let titleText = `[${periodLabels[idx]}] 기준일: ${stdVal || '-'} / 실시일: ${execVal} (${statusText})`;
-                            gaugeHtml += `<span class="px-2.5 py-1 text-xs font-bold rounded-md ${badgeColor} shadow-sm cursor-help transition-transform hover:scale-105" title="${titleText}">${periodLabels[idx]}</span>`;
+                            gaugeHtml += `<span class="px-2.5 py-1 text-xs font-bold rounded-md ${badgeColor} shadow-sm cursor-help transition-transform hover:scale-105 whitespace-nowrap" title="${titleText}">${periodLabels[idx]}</span>`;
                         } else {
                             let titleText = `[${periodLabels[idx]}] 기준일: ${stdVal || '-'} (미실시)`;
-                            gaugeHtml += `<span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-slate-200 text-slate-500 cursor-help" title="${titleText}">${periodLabels[idx]}</span>`;
+                            gaugeHtml += `<span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-slate-200 text-slate-500 cursor-help whitespace-nowrap" title="${titleText}">${periodLabels[idx]}</span>`;
                         }
                     }
                     gaugeHtml += '</div>';
@@ -341,16 +376,21 @@
 
             allParsedData = parsedItems;
 
-            // 상단 KPI 현황판 업데이트
             const totalPossibleSteps = totalItems * 8;
             const completionRate = totalPossibleSteps > 0 ? Math.round((totalDoneSteps / totalPossibleSteps) * 100) : 0;
+            const partnerNames = Object.keys(partnersStats);
 
+            // 좌측 3개 KPI 업데이트
             document.getElementById('kpi-total').innerText = totalItems + " 건";
             document.getElementById('kpi-total-sub').innerText = `총 점검 주기 ${totalPossibleSteps}회`;
 
             document.getElementById('kpi-rate').innerText = completionRate + "%";
             document.getElementById('kpi-rate-sub').innerText = `${totalDoneSteps} / ${totalPossibleSteps} 주기 완료`;
 
+            document.getElementById('kpi-partners').innerText = partnerNames.length + " 개사";
+            document.getElementById('kpi-partners-sub').innerText = partnerNames.join(', ') || '참여 협력사 현황';
+
+            // 우측 3개 KPI (정상 / 지연 / 경과) 업데이트
             document.getElementById('kpi-normal').innerText = normalSteps + " 건";
             document.getElementById('kpi-normal-sub').innerText = `전 주기 정상 품목 ${normalItemsCount}건`;
 
@@ -360,13 +400,8 @@
             document.getElementById('kpi-overdue').innerText = overdueSteps + " 건";
             document.getElementById('kpi-overdue-sub').innerText = `경과 발생 품목 ${overdueItemsCount}건`;
 
-            // 업체별 요약 카드 렌더링
             renderPartnerSummary(partnersStats);
-
-            // 필터 옵션 업데이트
             updateFilterOptions(partnersStats);
-
-            // 상세 테이블 렌더링
             filterTable();
         }
 
@@ -379,19 +414,19 @@
                 const maxSteps = st.items * 8;
                 const rate = maxSteps > 0 ? Math.round((st.doneSteps / maxSteps) * 100) : 0;
 
-                let statusBadge = `<span class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-emerald-100 text-emerald-700">정상 진행</span>`;
+                let statusBadge = `<span class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-emerald-100 text-emerald-700 whitespace-nowrap">정상 진행</span>`;
                 if (st.overdue > 0) {
-                    statusBadge = `<span class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-rose-100 text-rose-700">경과 ${st.overdue}건</span>`;
+                    statusBadge = `<span class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-rose-100 text-rose-700 whitespace-nowrap">경과 ${st.overdue}건</span>`;
                 } else if (st.delayed > 0) {
-                    statusBadge = `<span class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-amber-100 text-amber-700">지연 ${st.delayed}건</span>`;
+                    statusBadge = `<span class="px-2 py-0.5 text-[11px] font-bold rounded-full bg-amber-100 text-amber-700 whitespace-nowrap">지연 ${st.delayed}건</span>`;
                 }
 
                 html += `
                     <div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200/80 flex flex-col justify-between">
                         <div class="flex justify-between items-center mb-2">
                             <div class="flex items-center space-x-2">
-                                <span class="font-bold text-sm text-indigo-950">${osa}</span>
-                                <span class="text-xs text-slate-500 font-medium">(${st.items}건)</span>
+                                <span class="font-bold text-sm text-indigo-950 whitespace-nowrap">${osa}</span>
+                                <span class="text-xs text-slate-500 font-medium whitespace-nowrap">(${st.items}건)</span>
                             </div>
                             ${statusBadge}
                         </div>
@@ -399,8 +434,8 @@
                             <div class="bg-indigo-600 h-2 rounded-full" style="width: ${rate}%"></div>
                         </div>
                         <div class="flex justify-between items-center text-xs text-slate-600">
-                            <span>완료율: <strong class="text-slate-900">${rate}%</strong> (${st.doneSteps}/${maxSteps})</span>
-                            <div class="space-x-1.5 text-[11px]">
+                            <span class="whitespace-nowrap">완료율: <strong class="text-slate-900">${rate}%</strong> (${st.doneSteps}/${maxSteps})</span>
+                            <div class="space-x-1.5 text-[11px] whitespace-nowrap">
                                 <span class="text-emerald-600 font-semibold">정상 ${st.normal}</span>
                                 <span class="text-amber-600 font-semibold">지연 ${st.delayed}</span>
                                 <span class="text-rose-600 font-semibold">경과 ${st.overdue}</span>
@@ -445,17 +480,17 @@
             items.forEach(item => {
                 tableHtml += `
                     <tr class="hover:bg-slate-50/50 transition-colors">
-                        <td class="p-3.5 font-bold text-slate-900 bg-white" rowspan="2" style="vertical-align: middle;">${item.id}</td>
-                        <td class="p-3 text-slate-600 text-xs">${item.date}</td>
-                        <td class="p-3 font-semibold text-indigo-900 text-xs">${item.osa}</td>
-                        <td class="p-3 text-slate-700 font-medium text-xs">${item.client}</td>
+                        <td class="p-3.5 font-bold text-slate-900 bg-white whitespace-nowrap" rowspan="2" style="vertical-align: middle;">${item.id}</td>
+                        <td class="p-3 text-slate-600 text-xs whitespace-nowrap">${item.date}</td>
+                        <td class="p-3 font-semibold text-indigo-900 text-xs whitespace-nowrap">${item.osa}</td>
+                        <td class="p-3 text-slate-700 font-medium text-xs whitespace-nowrap">${item.client}</td>
                         <td class="p-3 text-slate-700 text-xs">${item.productName}</td>
                         <td class="p-3 text-slate-600 text-xs">${item.defect}</td>
                     </tr>
                     <tr class="hover:bg-slate-50/50 transition-colors bg-slate-50/70 border-b border-slate-200">
                         <td class="p-3" colspan="5">
                             <div class="flex flex-wrap items-center gap-3">
-                                <span class="text-xs font-bold text-slate-500">기간별 진행 상태:</span>
+                                <span class="text-xs font-bold text-slate-500 whitespace-nowrap">기간별 진행 상태:</span>
                                 ${item.gaugeHtml}
                             </div>
                         </td>
